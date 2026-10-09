@@ -1,0 +1,39 @@
+/* Mobile first. The sole breakpoint is @media (min-width: 768px).
+   Raw design values live here; theme files may override them. */
+:root {
+  --brand-logo: url('../assets/brand/logo.svg');
+  --color-bg: #FFFFFF; --color-surface: #F5F5F5; --color-surface-alt: #E8E8E8;
+  --color-border: #CFCFCF; --color-border-strong: #8F8F8F; --color-text: #171717;
+  --color-text-muted: #5F5F5F; --color-primary: #262626; --color-on-primary: #FFFFFF;
+  --color-focus: #262626; --color-danger: #262626; --color-placeholder: #E2E2E2;
+  --color-backdrop: rgb(0 0 0 / 45%);
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-regular: 400; --font-medium: 500; --font-semibold: 600; --font-bold: 700;
+  --text-xs: .75rem; --text-sm: .875rem; --text-md: 1rem; --text-lg: 1.125rem;
+  --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-hero-mobile: 2rem; --text-hero-desktop: 3rem;
+  --line-body: 1.5; --line-heading: 1.2;
+  --space-1: .25rem; --space-2: .5rem; --space-3: .75rem; --space-4: 1rem;
+  --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem; --space-8: 4rem;
+  --radius-sm: .25rem; --radius-md: .5rem; --radius-lg: .75rem; --radius-pill: 999rem;
+  --border-thin: 1px; --border-medium: 2px; --border-thick: 3px; --focus-offset: 3px;
+  --tap-min: 44px; --button-large: 52px; --logo-size: 32px; --icon-size: 24px;
+  --avatar-sm: 32px; --avatar-md: 44px; --avatar-lg: 80px; --step-size: 36px;
+  --content-max: 1200px; --header-mobile: 64px; --header-desktop: 72px; --tab-bar-height: 72px;
+  --hero-ratio: 28 / 17; --hero-mobile-ratio: 358 / 180; --hero-fluid-size: 3.3vw;
+  --modal-width: 560px; --modal-max-height: 90dvh; --toast-width: 440px;
+  --auth-width: 480px;
+  --shadow-dialog: 0 12px 48px rgb(0 0 0 / 20%); --shadow-toast: 0 4px 20px rgb(0 0 0 / 15%);
+  --disabled-opacity: .5; --layer-notification: 10; --layer-navigation: 5;
+  --status-requested-bg: var(--color-surface); --status-requested-text: var(--color-text); --status-requested-border: var(--color-border-strong); --status-requested-style: dashed;
+  --status-approved-bg: var(--color-surface); --status-approved-text: var(--color-text); --status-approved-border: var(--color-border-strong); --status-approved-style: solid;
+  --status-handed_over-bg: var(--color-surface); --status-handed_over-text: var(--color-text); --status-handed_over-border: var(--color-border-strong); --status-handed_over-style: double;
+  --status-returned-bg: var(--color-surface); --status-returned-text: var(--color-text); --status-returned-border: var(--color-border-strong); --status-returned-style: solid;
+  --status-overdue-bg: var(--color-surface); --status-overdue-text: var(--color-text); --status-overdue-border: var(--color-border-strong); --status-overdue-style: dashed;
+  --status-declined-bg: var(--color-surface); --status-declined-text: var(--color-text); --status-declined-border: var(--color-border-strong); --status-declined-style: double;
+  --status-cancelled-bg: var(--color-surface); --status-cancelled-text: var(--color-text); --status-cancelled-border: var(--color-border-strong); --status-cancelled-style: dashed;
+  --trust-new-bg: var(--color-surface); --trust-new-text: var(--color-text); --trust-new-border: var(--color-border-strong); --trust-new-style: dashed;
+  --trust-reliable-bg: var(--color-surface); --trust-reliable-text: var(--color-text); --trust-reliable-border: var(--color-border-strong); --trust-reliable-style: solid;
+  --trust-trusted-bg: var(--color-surface); --trust-trusted-text: var(--color-text); --trust-trusted-border: var(--color-border-strong); --trust-trusted-style: double;
+  --trust-needs_attention-bg: var(--color-surface); --trust-needs_attention-text: var(--color-text); --trust-needs_attention-border: var(--color-border-strong); --trust-needs_attention-style: dashed;
+}
+
