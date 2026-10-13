@@ -7,7 +7,6 @@ import FilterSidebar from '../components/items/FilterSidebar';
 import Button from '../components/ui/Button';
 import Modal from '../components/modals/Modal';
 import VerifiedOnlyModal from '../components/modals/VerifiedOnlyModal';
-import EditProfileModal from '../components/modals/EditProfileModal';
 
 export default function Browse() {
   const { user, isVerified, isAdmin } = useAuth();
@@ -17,7 +16,6 @@ export default function Browse() {
   const [filters, setFilters] = useState(emptyFilters);
   const [filterOpen, setFilterOpen] = useState(false);
   const [wall, setWall] = useState(false);
-  const [editing, setEditing] = useState(false);
   const { items, total, loading, error, retry, loadMore } = useItems({
     search: query,
     filters,
@@ -52,11 +50,6 @@ export default function Browse() {
             Check verification status
           </Button>
         </p>
-      )}
-      {isVerified && (
-        <Button variant="ghost" onClick={() => setEditing(true)}>
-          Edit profile
-        </Button>
       )}
       <div className="shelf-toolbar">
         <label className="search-field">
@@ -125,7 +118,6 @@ export default function Browse() {
         </div>
       </Modal>
       <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} />
-      <EditProfileModal open={editing} onClose={() => setEditing(false)} />
     </section>
   );
 }

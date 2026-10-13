@@ -6,7 +6,7 @@ import ItemPhoto from '../components/items/ItemPhoto';
 import OwnerSummary from '../components/items/OwnerSummary';
 import Button from '../components/ui/Button';
 import VerifiedOnlyModal from '../components/modals/VerifiedOnlyModal';
-import Modal from '../components/modals/Modal';
+import PhotoViewer from '../components/modals/PhotoViewer';
 import { useToast } from '../components/ui/Toast';
 
 export default function ItemDetail() {
@@ -125,20 +125,14 @@ export default function ItemDetail() {
       </div>
       <div className="detail-mobile-action">{requestButton}</div>
       <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} />
-      <Modal
-        open={Boolean(expandedPhoto)}
-        onClose={() => setExpandedPhoto(null)}
-        title={`Photo ${(expandedPhoto?.index ?? 0) + 1} of ${item.item_photos.length}`}
-        className="image-viewer"
-      >
-        {expandedPhoto && (
-          <img
-            className="image-viewer__image"
-            src={expandedPhoto.url}
-            alt={`Photo ${expandedPhoto.index + 1} of ${item.title}`}
-          />
-        )}
-      </Modal>
+      {expandedPhoto && (
+        <PhotoViewer
+          photo={expandedPhoto}
+          title={item.title}
+          total={item.item_photos.length}
+          onClose={() => setExpandedPhoto(null)}
+        />
+      )}
     </section>
   );
 }
