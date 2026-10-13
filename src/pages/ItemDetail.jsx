@@ -7,7 +7,9 @@ import OwnerSummary from '../components/items/OwnerSummary';
 import Button from '../components/ui/Button';
 import VerifiedOnlyModal from '../components/modals/VerifiedOnlyModal';
 import PhotoViewer from '../components/modals/PhotoViewer';
-import { useToast } from '../components/ui/Toast';
+import RequestBorrowModal from '../components/modals/RequestBorrowModal';
+import AvailabilityCalendar from '../components/items/AvailabilityCalendar';
+import useAvailability from '../hooks/useAvailability';
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -16,7 +18,9 @@ export default function ItemDetail() {
   const [selected, setSelected] = useState(0);
   const [wall, setWall] = useState(false);
   const [expandedPhoto, setExpandedPhoto] = useState(null);
-  const notify = useToast();
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [dates, setDates] = useState({ start: '', end: '' });
+  const availability = useAvailability(id);
   if (loading)
     return (
       <p className="container page-section" role="status">
@@ -48,7 +52,7 @@ export default function ItemDetail() {
     <Button
       onClick={() => {
         if (!isVerified) setWall(true);
-        else notify('Borrow requests will be available in Phase 4.');
+        else setRequestOpen(true);
       }}
     >
       Request to borrow
@@ -101,7 +105,23 @@ export default function ItemDetail() {
             <p>
               Up to {item.max_borrow_days} day{item.max_borrow_days === 1 ? '' : 's'} per borrow.
             </p>
-            <p className="muted">The booking calendar and requests will be available in Phase 4.</p>
+            {availability.loading ? (
+              <p role="status">Loading availability…</p>
+            ) : availability.error ? (
+              <div role="alert">
+                <p>Unable to load availability.</p>
+                <Button variant="secondary" onClick={availability.retry}>
+                  Try again
+                </Button>
+              </div>
+            ) : (
+              <AvailabilityCalendar
+                blocked={availability.blocked}
+                dates={dates}
+                onChange={setDates}
+                maximum={item.max_borrow_days}
+              />
+            )}
             <div className="detail-desktop-action">{requestButton}</div>
             <p className="small muted">Payment, if any, is settled in person.</p>
           </div>
@@ -125,6 +145,13 @@ export default function ItemDetail() {
       </div>
       <div className="detail-mobile-action">{requestButton}</div>
       <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} />
+      {requestOpen && (
+        <RequestBorrowModal
+          item={item}
+          initialDates={dates}
+          onClose={() => setRequestOpen(false)}
+        />
+      )}
       {expandedPhoto && (
         <PhotoViewer
           photo={expandedPhoto}

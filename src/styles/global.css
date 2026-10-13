@@ -402,6 +402,7 @@ input[aria-invalid='true'] {
 .modal {
   font-size: var(--text-md);
   line-height: var(--line-body);
+  overflow-wrap: anywhere;
   border: var(--border-thin) solid var(--color-border);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: 0;
@@ -1179,7 +1180,7 @@ html:has(dialog[open]) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .detail-layout {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.5fr) minmax(var(--calendar-panel-min), 1fr);
     grid-template-areas: 'gallery summary' 'description summary' 'comments summary';
     align-items: start;
   }
@@ -1230,5 +1231,201 @@ html:has(dialog[open]) {
   .queue__student {
     flex-wrap: wrap;
     overflow-wrap: anywhere;
+  }
+}
+
+.calendar {
+  min-width: 0;
+  margin-block: var(--space-4);
+}
+.calendar__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+.calendar__heading .button {
+  margin-top: 0;
+  min-width: var(--tap-min);
+  padding: var(--space-2);
+  font-size: var(--text-xl);
+}
+.calendar__heading h3 {
+  font-size: var(--text-md);
+}
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.calendar__weekday {
+  text-align: center;
+  padding-block: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.calendar__day {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: 0;
+  border: var(--border-thin) solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-size: var(--text-sm);
+}
+.calendar__day[aria-current='date'] {
+  border-color: var(--color-border-strong);
+}
+.calendar__day--blocked,
+.calendar__legend-blocked {
+  background: var(--color-surface-alt);
+  text-decoration: line-through;
+}
+.calendar__day--selected,
+.calendar__legend-selected {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.calendar__day:disabled {
+  cursor: default;
+}
+.calendar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.calendar__legend span {
+  padding: var(--space-1);
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.request-detail h1 {
+  font-size: var(--text-2xl);
+}
+.request-detail h2 {
+  font-size: var(--text-xl);
+}
+.request-detail,
+.request-list__row {
+  overflow-wrap: anywhere;
+}
+.request-layout {
+  display: grid;
+  grid-template-areas: 'action' 'participants' 'message' 'meetup' 'conditions';
+  gap: var(--space-5);
+}
+.request-layout > * {
+  min-width: 0;
+}
+.request-action-panel {
+  grid-area: action;
+  margin: 0;
+  align-self: start;
+}
+.request-action-panel .actions:empty {
+  display: none;
+}
+.request-participants {
+  grid-area: participants;
+  display: grid;
+  gap: var(--space-4);
+}
+.request-participants .notice-card {
+  margin: 0;
+}
+.request-participant-name {
+  font-size: var(--text-md);
+}
+.request-message {
+  grid-area: message;
+}
+.request-meetup {
+  grid-area: meetup;
+}
+.request-conditions {
+  grid-area: conditions;
+}
+.condition-records {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+.condition-record {
+  margin: 0;
+  min-width: 0;
+}
+.condition-record__photo,
+.condition-photo-preview img {
+  display: block;
+  width: 100%;
+  max-height: var(--condition-photo-height);
+  object-fit: contain;
+}
+.lifecycle {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+  gap: var(--space-2);
+  margin-block: var(--space-5);
+}
+.lifecycle li {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+.lifecycle li > span:first-child {
+  display: grid;
+  place-items: center;
+  width: var(--step-size);
+  height: var(--step-size);
+  border: var(--border-medium) dashed var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+.lifecycle .lifecycle__reached {
+  color: var(--color-text);
+  font-weight: var(--font-semibold);
+}
+.lifecycle .lifecycle__reached > span:first-child {
+  border-style: solid;
+  background: var(--color-surface-alt);
+}
+.lifecycle [aria-current='step'] > span:first-child {
+  border-width: var(--border-thick);
+}
+.request-list {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.request-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+}
+.request-list__row > div {
+  min-width: 0;
+  flex: 1 1 100%;
+}
+@media (min-width: 768px) {
+  .request-layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-areas: 'participants action' 'message meetup' 'conditions meetup';
+  }
+  .request-participants,
+  .condition-records {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .request-list__row > div {
+    flex-basis: 0;
   }
 }

@@ -68,6 +68,8 @@
   --filter-width: 200px;
   --item-thumbnail-width: 112px;
   --gallery-thumbnail-width: 96px;
+  --calendar-panel-min: 358px;
+  --condition-photo-height: 320px;
   --item-photo-ratio: 3 / 2;
   --item-detail-ratio: 35 / 16;
   --visually-hidden-size: 1px;

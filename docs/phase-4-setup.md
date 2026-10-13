@@ -1,0 +1,48 @@
+# Phase 4 setup and review gate
+
+Phase 4 is additive and authorized while the team tests Phase 3. Keep the existing database and Auth accounts. Do not reset, rerun older migrations or deploy this branch over the QA deployment until the team agrees. No remote migration or push has been performed by the agent.
+
+## Apply in Supabase SQL editor
+
+After all Phase 2 and Phase 3 migrations have succeeded, run each whole file once, separately:
+
+1. `supabase/migrations/020_requests.sql`
+2. `supabase/migrations/021_request_access.sql`
+3. `supabase/migrations/022_condition_storage.sql`
+
+Paste plain SQL beginning with `begin;`, without Markdown fences or backslashes. The first migration enables `btree_gist` for inclusive reservation exclusion. The later files create controlled functions/policies and the private condition-photo bucket. No new environment variables, npm dependencies, scheduled jobs or service-role keys are needed. SQL Editor may warn about destructive operations because the files include REVOKE/UPDATE statements or function bodies; these files do not reset existing data. Stop at an actual SQL error and retain its full message.
+
+Migration 022 reuses an existing `condition-photos` bucket and sets it to private, JPEG-only and 1 MB without deleting objects. If an older copy failed on `buckets_pkey`, run the updated complete 022 file. Its transaction did not apply the later statements after that failure. Do not rerun successful 020/021 migrations or a previously successful 022; existing function/policy errors indicate an earlier installation that should be inspected instead.
+
+## Manual acceptance — real team accounts
+
+Use separate browser profiles/windows for a verified owner and borrower, plus guest/unverified and unrelated-account checks. Enter actual content yourselves through the UI. Existing Phase 2 photo checks and Phase 3 bugs remain in the team's QA list; none are silently marked passed.
+
+1. **Request.** Open a published item owned by the other student. Select start and return dates on the calendar, including a same-day booking, then Request to borrow. M02 displays the dates, maximum, unavailable ranges, owner/meetup and optional message. Send goes to `/requests/:id` with a unique BH reference. Both participants find it under Borrowing/Lending. Pending requests do not block availability. Self-borrow, past dates, reversed dates, over-maximum duration and blocked-date ranges must fail on the server as well as in the UI.
+2. **Approve.** Owner opens the request and approves directly. The same route refreshes with a toast; borrower sees the approved meetup copy and Cancel request. Approval blocks both the start and end dates. Date availability and Available now filtering use Manila's current day; completed/cancelled/declined requests do not block. No request identifiers/messages appear in public calendar results.
+3. **Concurrency.** Create two real requested loans for the same listing with overlapping dates before approving either. Two owner sessions approve them at nearly the same time. Exactly one succeeds; the other sees an actionable conflict. A range ending on the other reservation's start date also overlaps. A range starting the next day does not. Never disable the exclusion constraint to test this. Repeat after cancelling the successful approval; the remaining request can then be approved if its dates are still valid.
+4. **Handover.** Owner of an approved request records required condition notes, optionally one real photo, and checks the in-person confirmation. Owner alone can confirm; borrower cannot. The state changes to Handed over with an immutable timestamp/notes/photo. Borrower sees the due date and no actions. Double submissions/replayed transitions must fail. Large/invalid uploads show errors without clearing notes or selected photo. Unsaved fields survive switching windows.
+5. **Return.** Owner alone chooses Good/Minor wear/Damaged, optional notes/photo, and confirms return after receiving the item. Handover and return records show side by side on desktop and stacked on mobile. The result is Returned; both sides have no actions. Reservation dates are released. Server return time determines whether it was late in Manila. Trust aggregates/profile history are Phase 5; do not treat the existing New badge as a calculated borrowing outcome yet.
+6. **Decline and cancel.** Decline requires an owner reason and optionally a note; the borrower sees both and Browse other items. Borrower can cancel Requested or Approved, optionally with a reason; cancellation returns to item detail, releases approved dates and remains visible in request history. The cancelled detail shows the actual cancellation time and no actions. Owner cancellation and borrower cancellation after handover must fail.
+7. **Privacy/immutability.** Guest, unverified and unrelated accounts cannot read request rows/detail/messages/course/condition images. Admin status alone grants no private request access. Try direct INSERT/UPDATE/DELETE, date/actor/status/timestamp edits, foreign paths, wrong event folders, uploads as borrower, overwrites, deletion of referenced evidence, and return-before-handover: all fail at the server. Only owned unused condition uploads can be removed. Both participants can read recorded photos/current avatars; an unrelated student cannot. Use an isolated real test upload for destructive negative checks, not needed evidence.
+8. **Listing retention.** Requested/Approved/Handed over all block soft deletion or hiding at the server. There is no delete UI until Phase 5. Request/condition history is retained after eventual soft deletion; verified historical participants retain private access. Concurrent request creation/approval and listing deletion must not strand a loan.
+9. **Dates and overdue.** Follow the exact SQL-editor procedure in `manual-tests.md`. On the end date the loan remains Handed over; it becomes Overdue after Manila midnight. Owner sees due date/days late and Confirm return; borrower sees the overdue reminder without actions. A browser left open updates at local midnight or when made visible again without resetting forms. Compare a return just before/after midnight using the local regression checks; no app date override exists.
+10. **Responsive/recovery.** At 390/767/768/1440 pixels, inspect calendar tap targets, M02–M06 bottom sheets/centered dialogs, lifecycle, both-role request states, long names/notes, portrait/landscape condition media and the full-size viewer. Mobile What happens next is first and request pages have bottom navigation. Verify X/Esc/backdrop/Cancel, focus return, disabled actions during saving, no horizontal overflow, refresh/deep links, no fake records, failed-fetch Retry, missing request, empty lists and Load more after more than twelve user-entered requests. Test the actual Vercel deployment after push/configuration, not just localhost.
+
+## Focused checks
+
+Run `pnpm check:requests`, `pnpm check:tokens` and `pnpm build`. After a real requested loan exists and a third team account is present, run `supabase/tests/phase-4-security.sql` in SQL Editor. Its ten checks roll back mutations and create no records. Test real Storage API denial and concurrent approvals manually; static policy inspection does not prove them.
+
+## Verification limits
+
+Local date/state/build checks and isolated responsive component tests can precede migration installation. They do not prove live Supabase RLS, Storage, RPC integration or concurrent approval correctness. Record live results and any Phase 3 regressions before pushing/deploying Phase 4. Stop at this review gate before Phase 5.
+
+### Local evidence — 13 October 2026
+
+- Request/date regression checks pass for inclusive same-day ranges, leap dates, maximum duration, reservation boundaries, Manila midnight, late-return timestamps and all owner/borrower action combinations.
+- Production build and token checks pass. The existing approximately 504 kB main-chunk warning is nonblocking; bundle tuning remains a polish task. No packages were added.
+- Isolated browser checks used the actual request/detail/calendar/modal components under React Strict Mode with database access replaced by local test adapters. No account was impersonated and no Supabase records/uploads were created. Temporary adapters/build files were removed.
+- Request layout and calendar were checked at 390/767/768/1440 pixels without horizontal overflow. The narrowest desktop calendar has 44-pixel day targets. Mobile What happens next precedes participant/message/condition sections; desktop uses two columns.
+- M02–M06 stay open under Strict Mode, have 16-pixel body text, bottom-align below 768 pixels and center from 768 pixels. Each was checked for horizontal overflow and Escape dismissal. The actual Decline action restores focus to its trigger. An intentionally failed local handover save retains notes and a usable dialog.
+- All fourteen role/state display combinations were inspected at 390 pixels, including borrower overdue with no actions. Real condition-photo upload/read/privacy, server mutations, availability RPC/embedding, pagination and concurrent approvals still require team tests after applying the migrations.
+- SQL source checks confirm transactions and comments/fixed search paths for every new function/policy. The ten-check rollback script is prepared but has not been run. No local PostgreSQL or remote SQL execution was performed.
