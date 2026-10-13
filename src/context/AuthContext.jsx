@@ -10,8 +10,10 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const generation = useRef(0);
+  const accountId = useRef(undefined);
   async function loadUser(nextUser) {
     const ticket = ++generation.current;
+    accountId.current = nextUser?.id ?? null;
     setUser(nextUser);
     setProfile(null);
     setError('');
@@ -36,12 +38,19 @@ export function AuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       queueMicrotask(() => {
-        if (active) void loadUser(session?.user || null);
+        if (!active) return;
+        const nextUser = session?.user || null;
+        if (accountId.current === (nextUser?.id ?? null)) {
+          setUser(nextUser);
+          return;
+        }
+        void loadUser(nextUser);
       });
     });
     return () => {
       active = false;
       generation.current++;
+      accountId.current = undefined;
       subscription.unsubscribe();
     };
   }, []);
