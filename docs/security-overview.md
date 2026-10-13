@@ -1,0 +1,20 @@
+# Borrowhood security overview
+
+**Implementation:** migrations 001–003 cover verification; 010–012 add listings. Phase 3 migrations and live acceptance are pending. Phase 2 photo-security manual step 9 is deferred to team QA, not passed.
+
+**Identity.** Supabase Auth manages passwords and sessions. An Auth trigger rejects outside emails and changes to account email. Signup copies only name/course metadata into a pending student profile; role/status metadata has no authority. Students confirm email, log in, add a photo, then submit. Admins are designated manually in SQL. Preserved accounts missing a profile can create only their own pending profile through the correction function.
+
+**Database boundary.** `profiles` has RLS and no browser INSERT/UPDATE/DELETE grants or policies. A student reads only their own permitted columns; a confirmed admin can read students. Admin notes have no browser column grant. `save_my_profile` accepts only the caller's name/course/owned photo. `submit_my_profile` moves only pending/rejected accounts to pending after confirmation/photo checks. `review_student` requires admin, a pending target and complete onboarding for approval. Profile rows are locked during changes. Approved users keep approval when editing; no revocation or self-review.
+
+**Functions.** Security-definer functions run with empty `search_path`, schema-qualified objects and explicit caller checks. Default PUBLIC execution is revoked; each function explicitly grants only its required browser roles. Public listing-identity/photo helpers allow anon reads; write functions require authenticated callers and check eligibility. `has_confirmed_email`, `is_admin`, and `is_verified` check protected Auth/profile data. The admin queue returns twelve results per page without granting Auth-table access. Every function/policy has a SQL comment.
+
+**Photos.** Private profile/item buckets enforce JPEG-only and 1 MB maximum. Browser compression strips metadata and resizes to an 800-pixel longest edge. Confirmed students upload profile photos under their UUID; item uploads require verification. New paths prevent overwrites. Private onboarding photos are owner/admin-readable; only the current avatar of an owner with a published listing gains public reads. Referenced item photos are public; unused uploads remain owner-only. Students cannot delete referenced photos or assign foreign uploads. Replacement saves references before cleaning up unused objects. Signed URLs expire after one hour.
+
+**Listings.** Public RLS exposes active, non-deleted items and their photo references. Verified owners can read their own hidden listings. Browser table writes are revoked. `save_item` checks verification and ownership, accepts content fields only, and atomically saves at most three unique, existing, owned photo paths. It cannot change owner, creation time, deletion or visibility. `owner_summary` exposes only ID/name/photo/trust; no course, email or review notes. Until borrowing outcomes exist, trust is New; Phase 5 adds real aggregates.
+
+**Secrets and UI.** Only project URL/anon key reach the browser; `.env` is ignored. UI route guards guide users, while grants/RLS/functions enforce access even with direct API requests. Email confirmation must be enabled in Supabase. The signup form opens the confirmed community rules in a native dialog; signup stores its version in Auth metadata.
+
+**Future slices.** Verified full profiles and participant-only requests/condition photos remain planned. Booking overlap constraints, inclusive Manila dates, deletion with active-request guards, trust outcomes and the trusted SQL overdue-demo correction belong to Phase 4/5. There is no delete action or app date override in Phase 3.
+
+**Evidence.** Small rollback scripts in `supabase/tests` check verification and listings using real team accounts/content. Manual checks are in `manual-tests.md` and `phase-3-setup.md`. Local build/token/browser checks do not prove live RLS; team QA must run server tests after installation. The dashboard operator is trusted and outside browser-role restrictions.
+
