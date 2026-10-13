@@ -17,14 +17,19 @@ create table public.profiles (
   constraint approved_profile_complete check (verification_status <> 'approved' or (photo_path is not null and submitted_at is not null)),
   constraint rejected_profile_reason check (verification_status <> 'rejected' or char_length(trim(rejection_reason)) > 0)
 );
+
 alter table public.profiles enable row level security;
+
 revoke all on public.profiles from anon, authenticated;
+
 grant select (id, full_name, course_year_section, photo_path, role, verification_status,
  submitted_at, reviewed_by, reviewed_at, rejection_reason, created_at, updated_at) on public.profiles to authenticated;
 
--- Auth is the server boundary: reject outside emails and every email change.
 create function public.guard_student_email() returns trigger
-language plpgsql security definer set search_path = '' as $$
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
   if lower(new.email) !~ '^[^@[:space:]]+@ms\.bulsu\.edu\.ph$' or new.email is null then
     raise exception 'Use your @ms.bulsu.edu.ph student email.';
@@ -36,12 +41,15 @@ begin
 end;
 $$;
 comment on function public.guard_student_email() is 'Enforces BulSU emails and immutable account email, including direct Auth API calls.';
+
 create trigger borrowhood_email_guard before insert or update of email on auth.users
 for each row execute function public.guard_student_email();
 
--- Only these two metadata values are copied; client role/status metadata is ignored.
 create function public.create_student_profile() returns trigger
-language plpgsql security definer set search_path = '' as $$
+language plpgsql
+security definer
+set search_path = ''
+as $$
 begin
   insert into public.profiles(id, full_name, course_year_section)
   values (new.id, trim(new.raw_user_meta_data->>'full_name'), trim(new.raw_user_meta_data->>'course_year_section'));
@@ -49,7 +57,10 @@ begin
 end;
 $$;
 comment on function public.create_student_profile() is 'Creates a pending student profile; metadata cannot assign privileges.';
+
 create trigger borrowhood_profile_created after insert on auth.users
 for each row execute function public.create_student_profile();
+
 revoke execute on function public.guard_student_email(), public.create_student_profile() from public, anon, authenticated;
+
 commit;

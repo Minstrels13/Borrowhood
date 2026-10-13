@@ -6,13 +6,16 @@ begin;
 
 -- Remove old app signup hooks, without touching Supabase's Auth-owned hooks.
 do $$
-declare hook record;
+declare
+  hook record;
 begin
   for hook in
     select t.tgname from pg_trigger t join pg_proc p on p.oid = t.tgfoid
     join pg_namespace n on n.oid = p.pronamespace
     where t.tgrelid = 'auth.users'::regclass and not t.tgisinternal and n.nspname = 'public'
-  loop execute format('drop trigger %I on auth.users', hook.tgname); end loop;
+  loop
+    execute format('drop trigger %I on auth.users', hook.tgname);
+  end loop;
 end;
 $$;
 
@@ -22,7 +25,8 @@ drop table if exists public.comments, public.item_photos, public.requests, publi
 -- In this disposable app project, remove custom public routines, retaining
 -- extension-owned routines (for example pgcrypto).
 do $$
-declare routine record;
+declare
+  routine record;
 begin
   for routine in
     select p.oid, p.proname, p.prokind, pg_get_function_identity_arguments(p.oid) as arguments
@@ -41,12 +45,16 @@ $$;
 -- Reset disposable application Storage policies, including broad old policies
 -- that could otherwise accidentally expose the new private bucket. Files stay.
 do $$
-declare rule record;
+declare
+  rule record;
 begin
   for rule in select policyname from pg_policies where schemaname = 'storage' and tablename = 'objects'
-  loop execute format('drop policy %I on storage.objects', rule.policyname); end loop;
+  loop
+    execute format('drop policy %I on storage.objects', rule.policyname);
+  end loop;
 end;
 $$;
+
 commit;
 
 -- NEXT: execute migrations/001_profiles.sql, 002_profile_access.sql, and
