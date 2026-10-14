@@ -8,12 +8,14 @@ import { useAuth } from '../../context/AuthContext';
 import { signOut } from '../../lib/auth';
 import { useState } from 'react';
 import VerifiedOnlyModal from '../modals/VerifiedOnlyModal';
+import { useDraftNavigation } from '../../context/DraftContext';
 
 export default function Navbar({ role: previewRole }) {
   const auth = useAuth();
   const navigate = useNavigate();
   const notify = useToast();
   const [wall, setWall] = useState(false);
+  const confirmNavigation = useDraftNavigation();
   const role = previewRole || (auth.isAdmin ? 'admin' : auth.user ? 'student' : 'guest');
   async function logout() {
     try {
@@ -59,7 +61,7 @@ export default function Navbar({ role: previewRole }) {
                   <Button
                     variant="ghost"
                     onClick={() =>
-                      auth.isVerified ? navigate('/activity?tab=listings') : setWall(true)
+                      auth.isVerified ? navigate('/activity?tab=requests') : setWall(true)
                     }
                   >
                     My Activity
@@ -83,12 +85,16 @@ export default function Navbar({ role: previewRole }) {
                 className="icon-button"
                 aria-label="Open account"
                 to={
-                  role === 'admin' ? '/admin/verification' : auth.isVerified ? '/shelf' : '/pending'
+                  auth.isVerified
+                    ? '/profile'
+                    : role === 'admin'
+                      ? '/admin/verification'
+                      : '/pending'
                 }
               >
                 <Avatar />
               </Link>
-              <Button variant="ghost" onClick={logout}>
+              <Button variant="ghost" onClick={() => confirmNavigation(logout)}>
                 Log out
               </Button>
             </>

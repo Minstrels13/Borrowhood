@@ -1,3 +1,5 @@
+> Current full-release checklist: **[Phases 1–7 QA review gate](qa-review-gate.md)**. The checklist below is historical Phase 3/4 coverage.
+
 # Borrowhood — Phase 3 and 4 testing checklist
 
 ## 1. Posting and browsing

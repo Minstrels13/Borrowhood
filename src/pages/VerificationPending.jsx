@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { signOut, resendConfirmation } from '../lib/auth';
 import { submitProfile } from '../lib/profiles';
@@ -9,12 +9,19 @@ import EditProfileModal from '../components/modals/EditProfileModal';
 export default function VerificationPending() {
   const { user, profile, confirmed, isVerified, isAdmin, refresh } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from =
+    typeof location.state?.from === 'string' &&
+    /^\/(?!\/)/.test(location.state.from) &&
+    !/^\/(login|signup|pending)(?:[/?#]|$)/.test(location.state.from)
+      ? location.state.from
+      : '/shelf';
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   if (isAdmin) return <Navigate to="/admin/verification" replace />;
-  if (isVerified) return <Navigate to="/shelf" replace />;
+  if (isVerified) return <Navigate to={from} replace />;
   const rejected = profile?.verification_status === 'rejected';
   const submitted = Boolean(profile?.submitted_at) && !rejected;
   async function action(task) {

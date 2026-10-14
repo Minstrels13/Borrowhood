@@ -35,6 +35,9 @@ function ActivityRequests({ userId, role, view, history, setHistory }) {
   return (
     <section>
       <h2>{role === 'requests' ? 'Requests' : role === 'lending' ? 'Lending' : 'Borrowing'}</h2>
+      <Button variant="secondary" disabled={loading} onClick={retry}>
+        Refresh activity
+      </Button>
       <p className="muted">
         {role === 'requests'
           ? history

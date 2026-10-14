@@ -69,6 +69,12 @@
   --item-thumbnail-width: 112px;
   --gallery-thumbnail-width: 96px;
   --calendar-panel-min: 358px;
+  --item-card-min: 230px;
+  --profile-sidebar-min: 220px;
+  --hero-image-min: 160px;
+  --hero-image-max: 280px;
+  --hero-image-fluid: 28dvh;
+  --section-spacing-fluid: 2dvh;
   --condition-photo-height: 320px;
   --condition-record-header-height: 112px;
   --condition-record-photo-ratio: 4 / 3;

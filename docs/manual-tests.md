@@ -1,21 +1,23 @@
+> Current team checklist: **[Phases 1–7 QA review gate](qa-review-gate.md)**. Keep the technical procedures below for security checks and the overdue demo.
+
 # Borrowhood manual acceptance checks
 
 ## Phase 1 review gate
 
-Footer-removal amendment verified: landing fits the 1440 × 1024 viewport without vertical scrolling. The guest brand link targets /. The development review link was removed from landing; /__ui remains directly accessible in development. Signed-in brand navigation targets /shelf, awaiting its planned implementation.
+Footer-removal amendment verified: landing fits the 1440 × 1024 viewport without vertical scrolling. The guest brand link targets /. The development review link was removed from landing; /\_\_ui remains directly accessible in development. Signed-in brand navigation targets /shelf, awaiting its planned implementation.
 
 Run `pnpm dev`; open its printed URL and `/__ui`.
 
 1. At 390px, 767px, 768px and 1440px, compare landing with S01 SVGs. Check responsive hero, step cards, trust blocks, readable buttons and no horizontal scroll. Approved change: the footer is removed throughout the app. Click the Borrowhood name/logo: guest goes to landing (/); signed-in navigation targets the home shelf (/shelf), which will be implemented with the listings slice.
 2. Future-feature buttons show “available soon” feedback; Home works; an unknown route offers Back home. No fake data is created.
-3. In /__ui inspect button variants, disabled state, labeled fields, help/error text, avatar sizes, all seven statuses and four trust levels.
+3. In /\_\_ui inspect button variants, disabled state, labeled fields, help/error text, avatar sizes, all seven statuses and four trust levels.
 4. Choose Example brand: colors, font, radii, spacing, logo and badges change. Switch back to grayscale. The preview is development-only.
 5. At 390px Open dialog is a bottom sheet; at 768px/1440px it is centered. X, Cancel, Esc and backdrop close it; inside clicks do not.
 6. Tab/Shift+Tab use native modal focus handling; underlying app controls remain inert. Browser chrome may receive focus at boundaries. Closing returns focus to the opener; background scrolling is locked while open.
 7. Click Listings/Condition history; use Left/Right/Home/End. Selection and empty-state panel change together.
 8. Primary shows Action confirmed; dismiss works; toast uses a polite live region.
 9. Inspect student/admin desktop navigation and mobile tab bar in preview. Guest landing has no bottom bar, matching S01.
-10. Run `pnpm check:tokens` and `pnpm build`. Check production excludes /__ui. Hosted deep-link refresh remains deferred until actual Vercel deployment.
+10. Run `pnpm check:tokens` and `pnpm build`. Check production excludes /\_\_ui. Hosted deep-link refresh remains deferred until actual Vercel deployment.
 
 ### Verification performed — 9 October 2026
 
@@ -87,4 +89,3 @@ commit;
 
 4. Confirm exactly one expected row is returned. If zero, stop and inspect the selected ID/status. The stored status stays `handed_over`; Overdue is a display derived from its due date. Browser roles have no direct request writes and the transition function accepts no date edits; no guard trigger or application override is used to bypass this rule. Privileged dashboard edits are trusted and ordinary database constraints still apply.
 5. Refresh both participants' request pages. Owner sees due date/days late and Confirm return. Borrower sees the overdue reminder and no actions. Confirm return through the owner UI to record a real late return. Phase 5 will aggregate this outcome into trust/history. To undo a date-only demo before return, restore the exact saved start/end dates with an equivalent targeted SQL update, subject to the same overlap constraints.
-

@@ -1,16 +1,18 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/ui/Button';
 
 export function RequireAuth() {
   const { loading, user, error, refresh } = useAuth();
+  const location = useLocation();
   if (loading)
     return (
       <p className="container page-section" role="status">
         Loading your account…
       </p>
     );
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user)
+    return <Navigate to="/login" state={{ from: location.pathname + location.search }} replace />;
   if (error)
     return (
       <div className="container page-section">

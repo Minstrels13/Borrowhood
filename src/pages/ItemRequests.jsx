@@ -10,6 +10,7 @@ import ProfilePhoto from '../components/ui/ProfilePhoto';
 import StatusChip from '../components/ui/StatusChip';
 import { useToast } from '../components/ui/Toast';
 import RequestActionModal from '../components/modals/RequestActionModal';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
 
 export default function ItemRequests() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ function OwnerRequests({ id, userId }) {
   const [actionError, setActionError] = useState('');
   const today = useManilaToday();
   const notify = useToast();
+  const saving = useUnsavedChanges(false, Boolean(busy));
 
   async function approve(request) {
     if (busy || list.loading || list.error) return;
@@ -32,6 +34,7 @@ function OwnerRequests({ id, userId }) {
     setActionError('');
     try {
       await transitionRequest(request.id, 'approve');
+      saving.saved();
       notify('Request approved. Overlapping pending requests were declined.');
     } catch (error) {
       setActionError(error.message);

@@ -3,7 +3,7 @@ import ItemPhoto from './ItemPhoto';
 import OwnerSummary from './OwnerSummary';
 import Button from '../ui/Button';
 
-export default function ItemCard({ item, preview = false, editable = false }) {
+export default function ItemCard({ item, preview = false, editable = false, onDelete }) {
   const title = item.title || 'Your item title';
   const image = (
     <ItemPhoto
@@ -36,11 +36,33 @@ export default function ItemCard({ item, preview = false, editable = false }) {
           <strong>{item.listing_type === 'rent' ? 'For rent' : 'Free'}</strong>
           {item.listing_type === 'rent' && item.price_label && <> · {item.price_label}</>}
         </p>
-        <OwnerSummary owner={item.owner} />
+        <OwnerSummary owner={item.owner} interactive={!preview} />
         {editable && (
-          <Button variant="secondary" to={`/items/${item.id}/edit`}>
-            Edit listing
-          </Button>
+          <div>
+            <div className="actions">
+              <Button to={`/items/${item.id}/requests`}>
+                View requests
+                {item.request_counts?.pending ? ` (${item.request_counts.pending})` : ''}
+              </Button>
+              <Button variant="secondary" to={`/items/${item.id}/edit`}>
+                Edit listing
+              </Button>
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  disabled={Boolean(item.request_counts?.active)}
+                  onClick={() => onDelete(item)}
+                >
+                  Delete listing
+                </Button>
+              )}
+            </div>
+            {Boolean(item.request_counts?.active) && (
+              <p className="small muted">
+                Close pending requests and complete active loans before deleting.
+              </p>
+            )}
+          </div>
         )}
       </div>
     </article>

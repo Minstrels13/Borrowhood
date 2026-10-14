@@ -25,7 +25,9 @@ export async function getItems({ search = '', filters, sort = 'newest', offset =
     filters?.available && !ownerId
       ? requireSupabase().rpc('available_items', {}, { count: 'exact' })
       : requireSupabase().from('items');
-  let query = source.select(itemFields, { count: 'exact' }).is('deleted_at', null);
+  let query = source
+    .select(ownerId ? `${itemFields}, request_counts` : itemFields, { count: 'exact' })
+    .is('deleted_at', null);
   if (ownerId) query = query.eq('owner_id', ownerId);
   else query = query.eq('is_active', true);
   if (search.trim()) query = query.ilike('title', `%${search.trim().replace(/[\\%_]/g, '\\$&')}%`);
@@ -97,4 +99,9 @@ export async function saveItem(id, values, photos) {
   });
   if (error) throw error;
   return data;
+}
+
+export async function deleteItem(id) {
+  const { error } = await requireSupabase().rpc('delete_item', { p_item: id });
+  if (error) throw error;
 }

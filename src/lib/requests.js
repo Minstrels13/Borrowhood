@@ -1,4 +1,5 @@
 import { requireSupabase } from './supabase';
+import { serviceError } from './errors';
 import { compressImage } from './compressImage';
 import { pageSize } from '../config/items';
 
@@ -11,13 +12,13 @@ export async function getLatestItemRequest(itemId, borrowerId) {
     .order('reference_number', { ascending: false })
     .limit(1)
     .maybeSingle();
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return data;
 }
 
 export async function getAvailability(itemId) {
   const { data, error } = await requireSupabase().rpc('item_availability', { p_item: itemId });
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return data;
 }
 
@@ -27,7 +28,7 @@ export async function getItemRequests(itemId, status = 'requested', offset = 0) 
     p_status: status,
     p_offset: offset,
   });
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return data;
 }
 
@@ -38,14 +39,14 @@ export async function createRequest(itemId, dates, message) {
     p_end: dates.end,
     p_message: message,
   });
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return data;
 }
 
 export async function getRequest(id) {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return null;
   const { data, error } = await requireSupabase().rpc('request_detail', { p_request: id });
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return data;
 }
 
@@ -68,7 +69,7 @@ export async function getRequests(userId, role, offset = 0) {
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .range(offset, offset + pageSize - 1);
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return { requests: data, total: count };
 }
 
@@ -78,7 +79,7 @@ export async function transitionRequest(id, action, values = {}) {
     p_action: action,
     p_values: values,
   });
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
 }
 
 export async function uploadConditionPhoto(ownerId, requestId, event, file) {
@@ -88,20 +89,20 @@ export async function uploadConditionPhoto(ownerId, requestId, event, file) {
     contentType: 'image/jpeg',
     upsert: false,
   });
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return path;
 }
 
 export async function removeConditionPhoto(path) {
   if (!path) return;
   const { error } = await requireSupabase().storage.from('condition-photos').remove([path]);
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
 }
 
 export async function conditionPhotoUrl(path) {
   const { data, error } = await requireSupabase()
     .storage.from('condition-photos')
     .createSignedUrl(path, 3600);
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Requests');
   return data.signedUrl;
 }

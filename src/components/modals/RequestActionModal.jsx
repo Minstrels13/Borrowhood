@@ -4,6 +4,7 @@ import Button from '../ui/Button';
 import Field from '../ui/Field';
 import { formatTimestamp } from '../../lib/dates';
 import { uploadConditionPhoto, removeConditionPhoto, transitionRequest } from '../../lib/requests';
+import useUnsavedChanges from '../../hooks/useUnsavedChanges';
 
 const titles = {
   decline: 'Decline this request?',
@@ -23,6 +24,7 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const recordsCondition = action === 'handover' || action === 'return';
+  const draft = useUnsavedChanges(Boolean(reason || notes || condition || confirmed || file), busy);
   useEffect(() => {
     if (!file) {
       setPreview(null);
@@ -63,6 +65,7 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
         photo_path: uploaded || null,
       });
       saved = true;
+      draft.saved();
       await onSaved(action);
     } catch (failure) {
       if (uploaded && !saved) {
@@ -83,7 +86,7 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
       open
       title={titles[action]}
       onClose={() => {
-        if (!busy) onClose();
+        draft.close(onClose);
       }}
     >
       {action === 'handover' && (
@@ -190,7 +193,7 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
             </p>
           )}
           <div className="actions">
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={() => draft.close(onClose)}>
               {action === 'cancel' ? 'Keep request' : 'Cancel'}
             </Button>
             <Button type="submit">

@@ -5,6 +5,7 @@ import Field from '../components/ui/Field';
 import CommunityRulesModal from '../components/modals/CommunityRulesModal';
 import { useAuth } from '../context/AuthContext';
 import { isStudentEmail, resendConfirmation, signUp } from '../lib/auth';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
 
 export default function SignUp() {
   const { user, loading, isAdmin, isVerified } = useAuth();
@@ -21,6 +22,13 @@ export default function SignUp() {
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
   const [notice, setNotice] = useState('');
+  const draft = useUnsavedChanges(
+    !sent &&
+      Boolean(
+        form.name || form.course || form.email || form.password || form.confirm || form.accepted,
+      ),
+    busy,
+  );
   const change = (key) => (event) =>
     setForm({
       ...form,
@@ -44,6 +52,7 @@ export default function SignUp() {
     setBusy(true);
     try {
       await signUp(form);
+      draft.saved();
       setSent(true);
     } catch (err) {
       setError(err.message);

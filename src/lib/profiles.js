@@ -1,4 +1,5 @@
 import { requireSupabase } from './supabase';
+import { serviceError } from './errors';
 
 export async function getMyProfile(id) {
   const { data, error } = await requireSupabase()
@@ -23,7 +24,7 @@ export async function getMyProfile(id) {
 }
 async function rpc(name, parameters) {
   const { data, error } = await requireSupabase().rpc(name, parameters);
-  if (error) throw error;
+  if (error) throw serviceError(error, 'Account details');
   return data;
 }
 
@@ -39,6 +40,12 @@ export const reviewStudent = (id, decision, reason, note) =>
   });
 export const getVerificationQueue = (status, search, offset) =>
   rpc('verification_queue', { p_status: status, p_search: search, p_offset: offset });
+export const getStudentProfile = (id) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+    ? rpc('student_profile', { p_user: id })
+    : Promise.resolve(null);
+export const getProfileHistory = (id, offset = 0) =>
+  rpc('profile_history', { p_user: id, p_offset: offset });
 export async function photoUrl(path) {
   if (!path) return null;
   const { data, error } = await requireSupabase()

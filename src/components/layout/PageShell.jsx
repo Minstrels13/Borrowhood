@@ -10,6 +10,8 @@ export default function PageShell({ children, showTabBar, role }) {
       pathname === '/activity' ||
       pathname.startsWith('/requests/') ||
       pathname.endsWith('/requests') ||
+      pathname === '/profile' ||
+      pathname.startsWith('/users/') ||
       pathname === '/items/new' ||
       pathname.endsWith('/edit'));
   return (
