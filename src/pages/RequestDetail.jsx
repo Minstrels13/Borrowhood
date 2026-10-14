@@ -39,7 +39,7 @@ export default function RequestDetail() {
           <>
             <h1>Request unavailable</h1>
             <p>This request does not exist or you are not one of its participants.</p>
-            <Button to="/activity?tab=borrowing">My Activity</Button>
+            <Button to="/activity?tab=requests">My Activity</Button>
           </>
         )}
       </section>
@@ -48,7 +48,7 @@ export default function RequestDetail() {
     setAction(null);
     notify(
       {
-        approve: 'Request approved.',
+        approve: 'Request approved. Overlapping pending requests were declined.',
         decline: 'Request declined.',
         cancel: 'Request cancelled.',
         handover: 'Handover confirmed.',
@@ -77,9 +77,16 @@ export default function RequestDetail() {
   }
   const isOwner = request.owner_id === user.id;
   const duration = inclusiveDays(request.start_date, request.end_date);
+  const activityTab = ['approved', 'handed_over'].includes(request.status)
+    ? 'borrowing'
+    : request.status === 'requested'
+      ? 'requests'
+      : 'requests&view=past';
   return (
     <section className="container page-section request-detail">
-      <Link to={`/activity?tab=${isOwner ? 'lending' : 'borrowing'}`}>My Activity</Link>
+      <Link to={isOwner ? `/items/${request.item_id}/requests` : `/activity?tab=${activityTab}`}>
+        {isOwner ? 'Item requests' : 'My Activity'}
+      </Link>
       <header className="section-heading">
         <div>
           <h1>Request {request.reference}</h1>
@@ -144,6 +151,11 @@ export default function RequestDetail() {
           <Button to={`/items/${request.item_id}`} variant="secondary">
             View item listing
           </Button>
+          {isOwner && (
+            <Button to={`/items/${request.item_id}/requests`} variant="ghost">
+              All requests for this item
+            </Button>
+          )}
         </section>
         <section className="request-conditions">
           <h2>Condition records</h2>

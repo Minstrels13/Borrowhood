@@ -2,8 +2,31 @@ import { requireSupabase } from './supabase';
 import { compressImage } from './compressImage';
 import { pageSize } from '../config/items';
 
+export async function getLatestItemRequest(itemId, borrowerId) {
+  const { data, error } = await requireSupabase()
+    .from('requests')
+    .select('id, status')
+    .eq('item_id', itemId)
+    .eq('borrower_id', borrowerId)
+    .order('reference_number', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
 export async function getAvailability(itemId) {
   const { data, error } = await requireSupabase().rpc('item_availability', { p_item: itemId });
+  if (error) throw error;
+  return data;
+}
+
+export async function getItemRequests(itemId, status = 'requested', offset = 0) {
+  const { data, error } = await requireSupabase().rpc('item_requests', {
+    p_item: itemId,
+    p_status: status,
+    p_offset: offset,
+  });
   if (error) throw error;
   return data;
 }
@@ -34,6 +57,14 @@ export async function getRequests(userId, role, offset = 0) {
       { count: 'exact' },
     )
     .eq(role === 'lending' ? 'owner_id' : 'borrower_id', userId)
+    .in(
+      'status',
+      role === 'requests'
+        ? ['requested']
+        : role === 'history'
+          ? ['declined', 'cancelled', 'returned']
+          : ['approved', 'handed_over'],
+    )
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .range(offset, offset + pageSize - 1);

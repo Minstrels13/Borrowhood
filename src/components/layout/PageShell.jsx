@@ -9,6 +9,7 @@ export default function PageShell({ children, showTabBar, role }) {
     (pathname === '/shelf' ||
       pathname === '/activity' ||
       pathname.startsWith('/requests/') ||
+      pathname.endsWith('/requests') ||
       pathname === '/items/new' ||
       pathname.endsWith('/edit'));
   return (

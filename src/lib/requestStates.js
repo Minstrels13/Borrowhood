@@ -7,6 +7,10 @@ import {
   returnedLate,
 } from './dates.js';
 
+export function canRequestAgain(request) {
+  return !request || request.status === 'declined';
+}
+
 export function requestState(request, isOwner, today) {
   const status = requestStatus(request, today);
   const owner = request.owner.full_name;

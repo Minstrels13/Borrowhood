@@ -4,9 +4,11 @@ import Modal from './Modal';
 import Button from '../ui/Button';
 import Field from '../ui/Field';
 import { useToast } from '../ui/Toast';
+import { useAuth } from '../../context/AuthContext';
 import useAvailability from '../../hooks/useAvailability';
 import useManilaToday from '../../hooks/useManilaToday';
-import { createRequest } from '../../lib/requests';
+import { createRequest, getLatestItemRequest } from '../../lib/requests';
+import { canRequestAgain } from '../../lib/requestStates';
 import { formatDate, inclusiveDays, rangeError } from '../../lib/dates';
 
 export default function RequestBorrowModal({ item, initialDates, onClose }) {
@@ -18,6 +20,7 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
   const today = useManilaToday();
   const navigate = useNavigate();
   const notify = useToast();
+  const { user } = useAuth();
   const validation = rangeError(
     dates.start,
     dates.end,
@@ -39,6 +42,26 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
       notify('Request sent. The owner will review it.');
       navigate(`/requests/${id}`);
     } catch (failure) {
+      if (user?.id) {
+        try {
+          const latest = await getLatestItemRequest(item.id, user.id);
+          if (!canRequestAgain(latest)) {
+            notify('You already sent a request. Opening it now.');
+            navigate(`/requests/${latest.id}`);
+            return;
+          }
+        } catch {
+          if (
+            failure.code === '23505' &&
+            failure.message === 'You already sent a borrow request for this item.'
+          ) {
+            setError(
+              'You already sent a request. Close this form and retry the request check on the item page.',
+            );
+            return;
+          }
+        }
+      }
       setError(failure.message);
     } finally {
       setBusy(false);

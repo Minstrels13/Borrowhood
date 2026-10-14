@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import useItem from '../hooks/useItem';
 import ItemPhoto from '../components/items/ItemPhoto';
@@ -10,6 +10,8 @@ import PhotoViewer from '../components/modals/PhotoViewer';
 import RequestBorrowModal from '../components/modals/RequestBorrowModal';
 import AvailabilityCalendar from '../components/items/AvailabilityCalendar';
 import useAvailability from '../hooks/useAvailability';
+import useItemRequest from '../hooks/useItemRequest';
+import { canRequestAgain } from '../lib/requestStates';
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -21,6 +23,9 @@ export default function ItemDetail() {
   const [requestOpen, setRequestOpen] = useState(false);
   const [dates, setDates] = useState({ start: '', end: '' });
   const availability = useAvailability(id);
+  const ownItem = Boolean(user && item?.owner_id === user.id);
+  const existing = useItemRequest(item?.id, isVerified && !ownItem ? user?.id : null);
+  const navigate = useNavigate();
   if (loading)
     return (
       <p className="container page-section" role="status">
@@ -43,19 +48,32 @@ export default function ItemDetail() {
         <Button to="/shelf">Browse other items</Button>
       </section>
     );
-  const ownItem = user?.id === item.owner_id;
+  async function openRequest() {
+    if (!isVerified) {
+      setWall(true);
+      return;
+    }
+    const latest = await existing.refresh();
+    if (latest.error || latest.cancelled) return;
+    if (!canRequestAgain(latest.request)) navigate(`/requests/${latest.request.id}`);
+    else setRequestOpen(true);
+  }
+  const alreadyRequested = !canRequestAgain(existing.request);
   const requestButton = ownItem ? (
-    <Button variant="secondary" to={`/items/${id}/edit`}>
-      Edit listing
-    </Button>
+    <div className="actions detail-owner-actions">
+      <Button to={`/items/${id}/requests`}>View requests</Button>
+      <Button variant="secondary" to={`/items/${id}/edit`}>
+        Edit listing
+      </Button>
+    </div>
+  ) : alreadyRequested ? (
+    <Button to={`/requests/${existing.request.id}`}>View your request</Button>
   ) : (
     <Button
-      onClick={() => {
-        if (!isVerified) setWall(true);
-        else setRequestOpen(true);
-      }}
+      onClick={openRequest}
+      disabled={isVerified && (existing.loading || Boolean(existing.error))}
     >
-      Request to borrow
+      {isVerified && existing.loading ? 'Checking your request…' : 'Request to borrow'}
     </Button>
   );
   return (
@@ -123,6 +141,17 @@ export default function ItemDetail() {
               />
             )}
             <div className="detail-desktop-action">{requestButton}</div>
+            {!ownItem && alreadyRequested && (
+              <p role="status">You have already sent a borrow request for this item.</p>
+            )}
+            {!ownItem && existing.error && (
+              <div role="alert">
+                <p>Unable to check your request. Please try again.</p>
+                <Button variant="secondary" onClick={existing.refresh}>
+                  Retry request check
+                </Button>
+              </div>
+            )}
             <p className="small muted">Payment, if any, is settled in person.</p>
           </div>
         </aside>

@@ -7,6 +7,7 @@ import Button from '../components/ui/Button';
 import RequestList from '../components/requests/RequestList';
 
 const tabs = [
+  { value: 'requests', label: 'Requests' },
   { value: 'borrowing', label: 'Borrowing' },
   { value: 'lending', label: 'Lending' },
   { value: 'listings', label: 'My listings' },
@@ -17,7 +18,7 @@ export default function MyListings() {
   const [params, setParams] = useSearchParams();
   const tab = tabs.some((entry) => entry.value === params.get('tab'))
     ? params.get('tab')
-    : 'borrowing';
+    : 'requests';
   const { items, total, loading, error, retry, loadMore } = useItems({ ownerId: user.id });
   return (
     <section className="container page-section">
@@ -53,7 +54,7 @@ export default function MyListings() {
             )}
           </>
         ) : (
-          <RequestList key={tab} userId={user.id} role={tab} />
+          <RequestList key={`${user.id}:${tab}`} userId={user.id} role={tab} />
         )}
       </Tabs>
     </section>

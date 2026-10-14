@@ -8,7 +8,7 @@ import {
   daysLate,
   returnedLate,
 } from '../src/lib/dates.js';
-import { requestState } from '../src/lib/requestStates.js';
+import { canRequestAgain, requestState } from '../src/lib/requestStates.js';
 
 assert.equal(manilaToday(new Date('2026-10-20T15:59:59Z')), '2026-10-20');
 assert.equal(manilaToday(new Date('2026-10-20T16:00:00Z')), '2026-10-21');
@@ -61,6 +61,11 @@ assert.deepEqual(requestState(request, true, '2026-10-21').actions, ['return']);
 assert.deepEqual(requestState(request, false, '2026-10-21').actions, []);
 assert.match(requestState({ ...request, status: 'declined' }, false, today).text, /Unavailable/);
 assert.equal(requestStatus({ ...request, status: 'approved' }, '2026-10-21'), 'approved');
+assert.equal(canRequestAgain(null), true);
+for (const status of ['requested', 'approved', 'handed_over', 'overdue', 'returned', 'cancelled']) {
+  assert.equal(canRequestAgain({ status }), false);
+}
+assert.equal(canRequestAgain({ status: 'declined' }), true);
 console.log(
   'Request date/state checks passed: inclusive days, leap dates, Manila midnight, overlaps, late returns and both-role action matrix.',
 );

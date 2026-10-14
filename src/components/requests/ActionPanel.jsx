@@ -16,6 +16,12 @@ export default function ActionPanel({ request, isOwner, today, busy, onAction, e
     <section className="notice-card request-action-panel" aria-busy={busy}>
       <h2>What happens next</h2>
       <p className="preserve-lines">{state.text}</p>
+      {isOwner && request.status === 'requested' && (
+        <p className="small muted">
+          Approving reserves these dates and automatically declines overlapping pending requests for
+          this item.
+        </p>
+      )}
       <div className="actions">
         {state.actions.map((action) =>
           action === 'browse' ? (
