@@ -62,10 +62,19 @@ assert.deepEqual(requestState(request, false, '2026-10-21').actions, []);
 assert.match(requestState({ ...request, status: 'declined' }, false, today).text, /Unavailable/);
 assert.equal(requestStatus({ ...request, status: 'approved' }, '2026-10-21'), 'approved');
 assert.equal(canRequestAgain(null), true);
-for (const status of ['requested', 'approved', 'handed_over', 'overdue', 'returned', 'cancelled']) {
+for (const status of ['requested', 'approved', 'handed_over', 'overdue', 'returned']) {
   assert.equal(canRequestAgain({ status }), false);
 }
 assert.equal(canRequestAgain({ status: 'declined' }), true);
+assert.equal(canRequestAgain({ status: 'cancelled' }), true);
+assert.match(
+  requestState(
+    { ...request, status: 'declined', decline_reason: 'Listing removed by owner.' },
+    false,
+    today,
+  ).text,
+  /Listing removed by owner\./,
+);
 console.log(
   'Request date/state checks passed: inclusive days, leap dates, Manila midnight, overlaps, late returns and both-role action matrix.',
 );

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { resendConfirmation, signIn, isStudentEmail } from '../lib/auth';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
+import { validateLogin } from '../lib/authValidation';
 
 export default function Login() {
   const location = useLocation();
@@ -23,6 +24,12 @@ export default function Login() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [unconfirmed, setUnconfirmed] = useState(false);
+  const [touched, setTouched] = useState({});
+  const fieldErrors = validateLogin({ email, password });
+  const errorRef = useRef(null);
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
   if (!loading && user && !accountError)
     return (
       <Navigate
@@ -33,14 +40,26 @@ export default function Login() {
     );
   async function submit(event) {
     event.preventDefault();
-    setBusy(true);
     setError('');
     setNotice('');
     setUnconfirmed(false);
+    setTouched({ email: true, password: true });
+    const firstError = Object.keys(fieldErrors)[0];
+    if (firstError) {
+      document.getElementById(`login-${firstError}`)?.focus();
+      return;
+    }
+    setBusy(true);
     try {
       await signIn(email, password);
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.code === 'invalid_credentials'
+          ? 'The email or password is incorrect. Check your student email and try your password again.'
+          : err.code === 'email_not_confirmed'
+            ? 'Confirm your email before logging in. Check your inbox or request a new confirmation email.'
+            : err.message,
+      );
       setUnconfirmed(err.code === 'email_not_confirmed');
     } finally {
       setBusy(false);
@@ -68,36 +87,49 @@ export default function Login() {
           request a new link, or log in if you already confirmed your email.
         </p>
       )}
-      <form className="form-stack" onSubmit={submit}>
+      <form className="form-stack" onSubmit={submit} noValidate>
         <Field
           label="BulSU email"
+          id="login-email"
+          error={touched.email ? fieldErrors.email : undefined}
+          onBlur={() => setTouched((current) => ({ ...current, email: true }))}
           type="email"
           autoComplete="email"
           required
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setError('');
+            setUnconfirmed(false);
+          }}
         />
         <Field
           label="Password"
+          id="login-password"
+          error={touched.password ? fieldErrors.password : undefined}
+          onBlur={() => setTouched((current) => ({ ...current, password: true }))}
           type={visible ? 'text' : 'password'}
           autoComplete="current-password"
           required
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setError('');
+          }}
         />
         <label className="checkbox-label">
           <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} />
           Show password
         </label>
+        {error && (
+          <p ref={errorRef} tabIndex={-1} role="alert" className="auth-error">
+            {error}
+          </p>
+        )}
         <Button type="submit" disabled={busy || loading}>
           {busy ? 'Logging in…' : 'Log in'}
         </Button>
       </form>
-      {error && (
-        <p role="alert" className="field__error">
-          {error}
-        </p>
-      )}
       {accountError && (
         <div role="alert">
           <p>{accountError}</p>

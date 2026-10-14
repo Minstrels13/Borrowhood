@@ -8,7 +8,7 @@ import {
 } from './dates.js';
 
 export function canRequestAgain(request) {
-  return !request || request.status === 'declined';
+  return !request || ['declined', 'cancelled'].includes(request.status);
 }
 
 export function requestState(request, isOwner, today) {

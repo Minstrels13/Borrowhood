@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
 import CommunityRulesModal from '../components/modals/CommunityRulesModal';
 import { useAuth } from '../context/AuthContext';
-import { isStudentEmail, resendConfirmation, signUp } from '../lib/auth';
+import { resendConfirmation, signUp } from '../lib/auth';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
+import { validateSignup } from '../lib/authValidation';
 
 export default function SignUp() {
   const { user, loading, isAdmin, isVerified } = useAuth();
@@ -20,6 +21,17 @@ export default function SignUp() {
   const [rulesOpen, setRulesOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [touched, setTouched] = useState({});
+  const errorRef = useRef(null);
+  const fieldErrors = validateSignup(form);
+  const fieldProps = (key) => ({
+    id: `signup-${key}`,
+    error: touched[key] ? fieldErrors[key] : undefined,
+    onBlur: () => setTouched((current) => ({ ...current, [key]: true })),
+  });
+  useEffect(() => {
+    if (error) errorRef.current?.focus();
+  }, [error]);
   const [sent, setSent] = useState(false);
   const [notice, setNotice] = useState('');
   const draft = useUnsavedChanges(
@@ -41,12 +53,12 @@ export default function SignUp() {
   async function submit(event) {
     event.preventDefault();
     setError('');
-    if (!isStudentEmail(form.email)) {
-      setError('Use your @ms.bulsu.edu.ph student email.');
-      return;
-    }
-    if (form.password !== form.confirm) {
-      setError('Your passwords do not match.');
+    setTouched(Object.fromEntries(Object.keys(form).map((key) => [key, true])));
+    const firstError = Object.keys(form).find((key) => fieldErrors[key]);
+    if (firstError) {
+      document
+        .getElementById(firstError === 'accepted' ? 'rules-accepted' : `signup-${firstError}`)
+        ?.focus();
       return;
     }
     setBusy(true);
@@ -94,9 +106,10 @@ export default function SignUp() {
           <p>
             Use your BulSU student email. You’ll add a profile photo after confirming your email.
           </p>
-          <form className="form-stack" onSubmit={submit}>
+          <form className="form-stack" onSubmit={submit} noValidate>
             <Field
               label="Full name"
+              {...fieldProps('name')}
               autoComplete="name"
               value={form.name}
               onChange={change('name')}
@@ -106,6 +119,7 @@ export default function SignUp() {
             />
             <Field
               label="Course, year and section"
+              {...fieldProps('course')}
               placeholder="Course, year and section"
               value={form.course}
               onChange={change('course')}
@@ -115,6 +129,7 @@ export default function SignUp() {
             />
             <Field
               label="BulSU email"
+              {...fieldProps('email')}
               type="email"
               autoComplete="email"
               hint="Only @ms.bulsu.edu.ph emails can sign up."
@@ -124,6 +139,7 @@ export default function SignUp() {
             />
             <Field
               label="Password"
+              {...fieldProps('password')}
               type="password"
               autoComplete="new-password"
               minLength={8}
@@ -134,6 +150,7 @@ export default function SignUp() {
             />
             <Field
               label="Confirm password"
+              {...fieldProps('confirm')}
               type="password"
               autoComplete="new-password"
               minLength={8}
@@ -144,6 +161,10 @@ export default function SignUp() {
             <div className="rules-consent">
               <input
                 id="rules-accepted"
+                aria-invalid={touched.accepted && fieldErrors.accepted ? true : undefined}
+                aria-describedby={
+                  touched.accepted && fieldErrors.accepted ? 'rules-error' : undefined
+                }
                 type="checkbox"
                 checked={form.accepted}
                 onChange={change('accepted')}
@@ -161,6 +182,16 @@ export default function SignUp() {
                 </button>
               </span>
             </div>
+            {touched.accepted && fieldErrors.accepted && (
+              <p id="rules-error" className="field__error">
+                {fieldErrors.accepted}
+              </p>
+            )}
+            {error && (
+              <p ref={errorRef} tabIndex={-1} role="alert" className="auth-error">
+                {error}
+              </p>
+            )}
             <Button type="submit" disabled={busy || loading}>
               {busy ? 'Creating account…' : 'Create account'}
             </Button>
@@ -170,8 +201,8 @@ export default function SignUp() {
           </p>
         </>
       )}
-      {error && (
-        <p role="alert" className="field__error">
+      {sent && error && (
+        <p ref={errorRef} tabIndex={-1} role="alert" className="auth-error">
           {error}
         </p>
       )}

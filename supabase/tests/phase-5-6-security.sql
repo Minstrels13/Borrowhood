@@ -1,4 +1,4 @@
--- SQL Editor postgres role, after 030/031/040. Uses three existing verified accounts; all fixture rows roll back.
+-- SQL Editor postgres role, after 042. Uses three existing verified accounts; all fixture rows roll back.
 begin;
 
 do $$
@@ -8,6 +8,7 @@ declare
   late_item uuid;
   wear_item uuid;
   pending uuid;
+  waiting uuid;
   comment_id uuid;
   forged public.items;
   before_trust jsonb;
@@ -102,14 +103,28 @@ begin
   perform set_config('request.jwt.claims', json_build_object('sub',members[1],'role','authenticated')::text,true);
   insert into public.requests(item_id,owner_id,borrower_id,start_date,end_date)
     values (listing,members[1],members[2],today+5,today+6) returning id into pending;
+  perform public.transition_request(pending,'approve');
+  insert into public.requests(item_id,owner_id,borrower_id,start_date,end_date)
+    values (listing,members[1],members[3],today+8,today+9) returning id into waiting;
   begin
     perform public.delete_item(listing);
     raise exception 'FAIL: active request deletion';
   exception when raise_exception then
-    if sqlerrm <> 'Complete or close active requests before hiding or deleting this listing.' then raise; end if;
+    if sqlerrm <> 'Complete or cancel approved loans and confirm return of ongoing loans before deleting this listing.' then raise; end if;
   end;
-  raise notice 'PASS: 9 pending requests block soft deletion';
-  perform public.transition_request(pending,'approve');
+  if not exists (select 1 from public.requests where id = waiting and status = 'requested')
+    or not exists (select 1 from public.items where id = listing and deleted_at is null) then
+    raise exception 'FAIL: blocked deletion changed the listing or pending requests';
+  end if;
+  update public.requests set status = 'handed_over', handed_over_at = now(), handover_notes = 'Rollback test'
+    where id = pending;
+  begin
+    perform public.delete_item(listing);
+    raise exception 'FAIL: ongoing loan deletion';
+  exception when raise_exception then
+    if sqlerrm <> 'Complete or cancel approved loans and confirm return of ongoing loans before deleting this listing.' then raise; end if;
+  end;
+  raise notice 'PASS: 9 approved and ongoing loans block deletion without declining pending requests';
   begin
     update public.items set meetup_note = 'Changed agreement' where id = listing;
     raise exception 'FAIL: approved agreement changed';
@@ -118,6 +133,11 @@ begin
   end;
   update public.requests set status='declined',decline_reason='Rollback test',declined_at=now() where id=pending;
   perform public.delete_item(listing);
+  if not exists (select 1 from public.requests where id = waiting and status = 'declined'
+    and decline_reason = 'Listing removed by owner.' and declined_at is not null)
+    or not exists (select 1 from public.items where id = listing and deleted_at is not null and not is_active) then
+    raise exception 'FAIL: deletion did not decline pending requests and retain the listing record';
+  end if;
   begin
     perform public.comment_list(listing);
     raise exception 'FAIL: deleted public comments';
@@ -125,7 +145,7 @@ begin
     if sqlerrm <> 'This listing is unavailable.' then raise; end if;
   end;
   if not exists (select 1 from public.requests where id=pending) then raise exception 'FAIL: history removed'; end if;
-  raise notice 'PASS: 10 active agreements protected; soft deletion hides public Q&A and retains history';
+  raise notice 'PASS: 10 active agreements protected; deletion declines pending requests, hides public Q&A and retains history';
 end;
 $$;
 

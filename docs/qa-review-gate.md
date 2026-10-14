@@ -1,6 +1,6 @@
 # Borrowhood — all-phases QA review gate
 
-This is the current checklist for **Phases 1–7**, including the later changes to requests and My Activity. Use this instead of the older Phase 3/4-only gate. Implementation is ready for review; unchecked tasks are not assumed passed.
+This is the current checklist for **Phases 1–7**, including the later changes to requests and My Activity. This is the consolidated team checklist. Implementation is ready for review; unchecked tasks are not assumed passed.
 
 ## Before testing
 
@@ -13,7 +13,7 @@ Use separate browser profiles or browsers for each account. Enter your team's ac
 - [ ] Borrowhood is clickable: guests go to landing, signed-in students go to the Shelf. There is no footer.
 - [ ] Mobile uses the slim header/bottom navigation; desktop starts at 768px. The current bottom-navigation section is marked. Item detail has its own bottom action bar.
 - [ ] Text, pictures, forms and buttons fit without sideways scrolling. The Shelf remains readable at 768px. Check long item names and student names.
-- [ ] Landing fits the agreed normal laptop view at normal zoom. Mobile and enlarged text can scroll naturally without losing content.
+- [ ] Landing retains the desktop scale on laptop screens; shorter screens may scroll vertically. Mobile and enlarged text can scroll naturally without losing content.
 - [ ] Keyboard users can reach controls and identify focus. Dialogs keep focus inside and return it after closing. Check X, Escape, backdrop and Cancel.
 
 ## Phase 2 — signup, verification and account corrections
@@ -39,7 +39,8 @@ Use separate browser profiles or browsers for each account. Enter your team's ac
 
 - [ ] Borrower selects valid dates, optionally writes a message and sends. The request opens with a unique reference such as BH-0142. The owner cannot borrow their own item.
 - [ ] Past dates, reversed dates, unavailable dates and dates beyond the listing's maximum are rejected. Same-day borrowing counts as one day; both start and return days count.
-- [ ] After sending, item detail shows View your request instead of another request form. This also applies after cancellation or return. Only Declined allows a new request for that item.
+- [ ] After sending, item detail shows View your request instead of another request form. Requested, Approved, Handed over and Returned still open the existing request. Declined or Cancelled allows a new request for that item.
+- [ ] Cancel a Requested or Approved request, then request the same item again with valid dates. A new request and reference are created; the cancelled request stays in Past requests. Once the new request is sent, another submission is blocked, including from a second tab.
 - [ ] Owner clicks View requests on the item or My listings card. Pending/All requests, borrower names, messages, dates and View request links work. The owner calendar explains reservations without asking the owner to pick borrowing dates.
 - [ ] Owner approves directly. The selected request becomes Approved and its dates become unavailable. Borrower can Refresh status to see the result and meetup details.
 - [ ] Two different borrowers request overlapping dates before approval. Approving one automatically declines the other with a visible availability reason. A shared start/return day also overlaps. Requests beginning the next day stay pending.
@@ -57,8 +58,11 @@ Use separate browser profiles or browsers for each account. Enter your team's ac
 - [ ] Trust reflects completed **borrows**, not items lent. No completed borrows gives 100/New. Each late return deducts 8; each damaged return deducts 15; minor wear deducts nothing; the score stops at zero.
 - [ ] Check the badge against actual counts: under 70 is Needs attention; at least five completed borrows and at least 90 is Trusted; other students with completed borrows are Reliable.
 - [ ] Condition history shows real completed borrowing/lending summaries. Other verified students see summaries, while private notes, messages and evidence remain accessible only to the request participants.
-- [ ] Delete an owned listing with no active requests. Confirm deletion removes it from public browsing and owned listings but retains request/condition history. Keeping the listing or closing the dialog makes no change.
-- [ ] Pending, approved and handed-over requests block deletion. Another student cannot delete an item. Rental terms and meetup details cannot change during an approved/ongoing loan; unrelated listing edits remain possible.
+- [ ] Delete an owned Free or For rent listing with no approved or ongoing loans from item detail or My Activity → My listings. Confirm deletion from item detail returns to My listings, removes it from public browsing and owned listings, and retains request/condition history. Keeping the listing or closing the dialog makes no change. Check the controls at all four widths.
+- [ ] Delete listing is visually separate from View requests/Edit listing, with red text and a trash icon. Pending requests do not disable it; the confirmation explains they will be declined automatically. The confirmation names the item, explains that it cannot be restored in the app, and initially focuses Keep listing. While deleting, repeated confirmation and closing make no change.
+- [ ] Delete a listing with pending requests. Each becomes Declined with “Listing removed by owner.” The borrower sees it under Requests → Past requests and can still open its detail. Existing declined, cancelled and returned requests remain unchanged. No request is erased.
+- [ ] Approved and handed-over/overdue loans block deletion. If the listing also has pending requests, a blocked deletion leaves those requests pending. Another student cannot delete an item. Rental terms and meetup details cannot change during an approved/ongoing loan; unrelated listing edits remain possible.
+- [ ] Project lead: try approving and deleting from two owner windows at the same time. If approval succeeds, deletion is blocked. If deletion succeeds, pending requests are declined and cannot be approved afterward.
 
 ## Phase 6 — questions and comments
 
