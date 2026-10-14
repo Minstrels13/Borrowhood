@@ -13,6 +13,7 @@ import ProfilePhoto from '../components/ui/ProfilePhoto';
 import StatusChip from '../components/ui/StatusChip';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
 
 export default function RequestDetail() {
   const { id } = useParams();
@@ -24,6 +25,7 @@ export default function RequestDetail() {
   const [actionError, setActionError] = useState('');
   const notify = useToast();
   const navigate = useNavigate();
+  const saving = useUnsavedChanges(false, busy);
   if (!request)
     return (
       <section className="container page-section">
@@ -68,6 +70,7 @@ export default function RequestDetail() {
     setBusy(true);
     try {
       await transitionRequest(id, 'approve');
+      saving.saved();
       await saved('approve');
     } catch (failure) {
       setActionError(failure.message);
@@ -101,6 +104,9 @@ export default function RequestDetail() {
         </div>
         <StatusChip status={requestStatus(request, today)} />
       </header>
+      <Button variant="secondary" onClick={refresh} disabled={busy || loading || Boolean(action)}>
+        Refresh status
+      </Button>
       <LifecycleTracker request={request} />
       {error && (
         <div role="alert">
@@ -159,10 +165,14 @@ export default function RequestDetail() {
         </section>
         <section className="request-conditions">
           <h2>Condition records</h2>
-          <div className="condition-records">
-            <ConditionRecord request={request} event="handover" />
-            <ConditionRecord request={request} event="return" />
-          </div>
+          {request.handed_over_at ? (
+            <div className="condition-records">
+              <ConditionRecord request={request} event="handover" />
+              <ConditionRecord request={request} event="return" />
+            </div>
+          ) : (
+            <p className="muted">Condition records appear after the owner confirms handover.</p>
+          )}
         </section>
       </div>
       {action && (

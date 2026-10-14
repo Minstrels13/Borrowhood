@@ -12,7 +12,8 @@
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
     "check:tokens": "node scripts/check-design-tokens.mjs",
-    "check:requests": "node scripts/check-request-dates.mjs"
+    "check:requests": "node scripts/check-request-dates.mjs",
+    "check:trust": "node scripts/check-trust.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",

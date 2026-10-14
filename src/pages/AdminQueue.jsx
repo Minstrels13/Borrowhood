@@ -69,13 +69,20 @@ export default function AdminQueue() {
   return (
     <section className="container page-section">
       <h1>Verification queue</h1>
+      <Button
+        variant="secondary"
+        disabled={loading || busyId !== null || Boolean(rejecting)}
+        onClick={refresh}
+      >
+        Refresh queue
+      </Button>
       <p>
         {loading && !rows.length
           ? 'Loading students…'
           : `${total} ${status} student${total === 1 ? '' : 's'}`}
       </p>
       <p className="notice-card">
-        Check that the photo is clear and the student email matches the name. Approval requires
+        Check the student email, submitted details and clear profile photo. Approval requires
         confirmed email, a photo, and a submitted application.
       </p>
       <Field
@@ -101,9 +108,16 @@ export default function AdminQueue() {
                 <ProfilePhoto path={student.photo_path} name={student.full_name} />
                 <strong>{student.full_name}</strong>
               </div>
-              <p className="queue__email">{student.email}</p>
-              <p>{student.course_year_section}</p>
+              <p className="queue__email">
+                <span className="sr-only">BulSU email: </span>
+                {student.email}
+              </p>
               <p>
+                <span className="sr-only">Course, year and section: </span>
+                {student.course_year_section}
+              </p>
+              <p>
+                <span className="sr-only">Email status: </span>
                 {student.email_confirmed ? 'Email confirmed' : 'Email not confirmed'}
                 {!student.photo_path && (
                   <>
@@ -119,7 +133,10 @@ export default function AdminQueue() {
                 )}
               </p>
               <p>
-                <span className="queue__mobile-label">Requested: </span>
+                <span className="sr-only">Requested: </span>
+                <span className="queue__mobile-label" aria-hidden="true">
+                  Requested:{' '}
+                </span>
                 {new Intl.DateTimeFormat('en-PH', {
                   dateStyle: 'medium',
                   timeZone: 'Asia/Manila',

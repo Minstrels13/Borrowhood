@@ -11,6 +11,7 @@ export default function AvailabilityCalendar({
   onChange,
   maximum,
   disabled = false,
+  readOnly = false,
 }) {
   const today = useManilaToday();
   const [month, setMonth] = useState(() => today.slice(0, 7));
@@ -33,7 +34,7 @@ export default function AvailabilityCalendar({
   const error =
     dates.start && dates.end ? rangeError(dates.start, dates.end, maximum, blocked, today) : '';
   return (
-    <div className="calendar">
+    <div className={readOnly ? 'calendar calendar--readonly' : 'calendar'}>
       <div className="calendar__heading">
         <Button
           variant="ghost"
@@ -69,7 +70,7 @@ export default function AvailabilityCalendar({
               key={day}
               type="button"
               className={`calendar__day${unavailable ? ' calendar__day--blocked' : ''}${selected ? ' calendar__day--selected' : ''}`}
-              disabled={disabled || unavailable || day < today}
+              disabled={readOnly || disabled || unavailable || day < today}
               aria-label={`${formatDate(day)}${unavailable ? ', unavailable' : day < today ? ', past' : ', available'}`}
               aria-pressed={Boolean(selected)}
               aria-current={day === today ? 'date' : undefined}
@@ -83,14 +84,16 @@ export default function AvailabilityCalendar({
       <div className="calendar__legend small">
         <span>Available</span>
         <span className="calendar__legend-blocked">Unavailable</span>
-        <span className="calendar__legend-selected">Your dates</span>
+        {!readOnly && <span className="calendar__legend-selected">Your dates</span>}
       </div>
       <p className="small" aria-live="polite">
-        {dates.start && dates.end
-          ? `${formatDate(dates.start)} to ${formatDate(dates.end)} (${inclusiveDays(dates.start, dates.end)} days)`
-          : dates.start
-            ? `From ${formatDate(dates.start)}. Choose a return date.`
-            : 'Choose a start date, then a return date.'}
+        {readOnly
+          ? 'Reserved dates are unavailable. Review incoming requests using View requests.'
+          : dates.start && dates.end
+            ? `${formatDate(dates.start)} to ${formatDate(dates.end)} (${inclusiveDays(dates.start, dates.end)} days)`
+            : dates.start
+              ? `From ${formatDate(dates.start)}. Choose a return date.`
+              : 'Choose a start date, then a return date.'}
       </p>
       {error && (
         <p className="field__error" role="alert">

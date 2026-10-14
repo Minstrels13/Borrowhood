@@ -10,6 +10,7 @@ import useManilaToday from '../../hooks/useManilaToday';
 import { createRequest, getLatestItemRequest } from '../../lib/requests';
 import { canRequestAgain } from '../../lib/requestStates';
 import { formatDate, inclusiveDays, rangeError } from '../../lib/dates';
+import useUnsavedChanges from '../../hooks/useUnsavedChanges';
 
 export default function RequestBorrowModal({ item, initialDates, onClose }) {
   const [dates, setDates] = useState(initialDates);
@@ -21,6 +22,10 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
   const navigate = useNavigate();
   const notify = useToast();
   const { user } = useAuth();
+  const draft = useUnsavedChanges(
+    Boolean(message) || dates.start !== initialDates.start || dates.end !== initialDates.end,
+    busy,
+  );
   const validation = rangeError(
     dates.start,
     dates.end,
@@ -40,6 +45,7 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
     try {
       const id = await createRequest(item.id, dates, message);
       notify('Request sent. The owner will review it.');
+      draft.saved();
       navigate(`/requests/${id}`);
     } catch (failure) {
       if (user?.id) {
@@ -47,6 +53,7 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
           const latest = await getLatestItemRequest(item.id, user.id);
           if (!canRequestAgain(latest)) {
             notify('You already sent a request. Opening it now.');
+            draft.saved();
             navigate(`/requests/${latest.id}`);
             return;
           }
@@ -72,7 +79,7 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
       open
       title="Request to borrow"
       onClose={() => {
-        if (!busy) onClose();
+        draft.close(onClose);
       }}
     >
       <h3>{item.title}</h3>
@@ -155,7 +162,7 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
             </p>
           )}
           <div className="actions">
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={() => draft.close(onClose)}>
               Cancel
             </Button>
             <Button

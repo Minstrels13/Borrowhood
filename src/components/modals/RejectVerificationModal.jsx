@@ -3,12 +3,14 @@ import Modal from './Modal';
 import Field from '../ui/Field';
 import Button from '../ui/Button';
 import { reviewStudent } from '../../lib/profiles';
+import useUnsavedChanges from '../../hooks/useUnsavedChanges';
 
 export default function RejectVerificationModal({ student, onClose, onReviewed }) {
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const draft = useUnsavedChanges(Boolean(student && (reason || note)), busy);
   useEffect(() => {
     setReason('');
     setNote('');
@@ -20,6 +22,7 @@ export default function RejectVerificationModal({ student, onClose, onReviewed }
     setError('');
     try {
       await reviewStudent(student.id, 'rejected', reason, note);
+      draft.saved();
       onReviewed();
       onClose();
     } catch (err) {
@@ -32,7 +35,7 @@ export default function RejectVerificationModal({ student, onClose, onReviewed }
     <Modal
       open={Boolean(student)}
       onClose={() => {
-        if (!busy) onClose();
+        draft.close(onClose);
       }}
       title="Reject verification"
     >
@@ -42,34 +45,37 @@ export default function RejectVerificationModal({ student, onClose, onReviewed }
         {student?.email}
       </p>
       <form className="form-stack" onSubmit={submit}>
-        <Field
-          label="Reason for rejection"
-          required
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          maxLength={1000}
-          hint="The student will see this reason and can fix their details."
-        />
-        <Field
-          label="Admin note (optional)"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          maxLength={1000}
-          hint="Visible only to admins."
-        />
-        {error && (
-          <p role="alert" className="field__error">
-            {error}
-          </p>
-        )}
-        <div className="actions">
-          <Button variant="secondary" disabled={busy} onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={busy}>
-            {busy ? 'Rejecting…' : 'Reject student'}
-          </Button>
-        </div>
+        <fieldset className="form-stack post-fields" disabled={busy}>
+          <legend className="sr-only">Verification rejection</legend>
+          <Field
+            label="Reason for rejection"
+            required
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            maxLength={1000}
+            hint="The student will see this reason and can fix their details."
+          />
+          <Field
+            label="Admin note (optional)"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            maxLength={1000}
+            hint="Visible only to admins."
+          />
+          {error && (
+            <p role="alert" className="field__error">
+              {error}
+            </p>
+          )}
+          <div className="actions">
+            <Button variant="secondary" disabled={busy} onClick={() => draft.close(onClose)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={busy}>
+              {busy ? 'Rejecting…' : 'Reject student'}
+            </Button>
+          </div>
+        </fieldset>
       </form>
     </Modal>
   );

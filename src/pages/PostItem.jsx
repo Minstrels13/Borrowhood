@@ -10,6 +10,8 @@ import ItemCard from '../components/items/ItemCard';
 import ItemPhoto from '../components/items/ItemPhoto';
 import { useToast } from '../components/ui/Toast';
 import Modal from '../components/modals/Modal';
+import useUnsavedChanges from '../hooks/useUnsavedChanges';
+import { getStudentProfile } from '../lib/profiles';
 
 const initialValues = {
   title: '',
@@ -31,9 +33,32 @@ export default function PostItem() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [trustLevel, setTrustLevel] = useState(null);
   const urls = useRef(new Set());
   const navigate = useNavigate();
   const notify = useToast();
+  const baseline = item
+    ? Object.fromEntries(Object.keys(initialValues).map((key) => [key, item[key] ?? '']))
+    : initialValues;
+  const dirty =
+    JSON.stringify(values) !== JSON.stringify(baseline) ||
+    photos.some((photo) => photo.file) ||
+    JSON.stringify(photos.map((photo) => photo.path)) !==
+      JSON.stringify((item?.item_photos || []).map((photo) => photo.storage_path));
+  const draft = useUnsavedChanges(dirty, busy);
+  useEffect(() => {
+    let active = true;
+    getStudentProfile(user.id)
+      .then((value) => {
+        if (active) setTrustLevel(value?.trust.level || null);
+      })
+      .catch(() => {
+        if (active) setTrustLevel(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [user.id]);
   useEffect(() => {
     if (item) {
       setValues(
@@ -119,6 +144,7 @@ export default function PostItem() {
         notify('Listing saved. Some unused photos could not be cleaned up.');
       }
       notify(id ? 'Listing updated.' : 'Listing published.');
+      draft.saved();
       navigate('/activity?tab=listings');
     } catch (failure) {
       if (!saved) {
@@ -160,12 +186,18 @@ export default function PostItem() {
     is_active: true,
     previewPhoto: photos[0]?.src,
     item_photos: photos[0]?.path ? [{ storage_path: photos[0].path }] : [],
-    owner: profile ? { ...profile, trust_level: 'new' } : null,
+    owner: profile ? { ...profile, trust_level: trustLevel } : null,
   };
   return (
     <section className="container page-section">
       <h1>{id ? 'Edit listing' : 'Post an item'}</h1>
       <p>Share something other BulSU students can borrow.</p>
+      {id && (
+        <p className="notice-card">
+          Rental terms and meetup details cannot change while a loan is approved or ongoing.
+          Complete the loan first to change those details.
+        </p>
+      )}
       <div className="post-layout">
         <form onSubmit={submit}>
           <fieldset className="form-stack post-fields" disabled={busy}>

@@ -1,11 +1,20 @@
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { resendConfirmation, signIn } from '../lib/auth';
+import { resendConfirmation, signIn, isStudentEmail } from '../lib/auth';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
 
 export default function Login() {
+  const location = useLocation();
+  const [params] = useSearchParams();
+  const confirmationExpired = params.get('confirmation') === 'expired';
+  const from =
+    typeof location.state?.from === 'string' &&
+    /^\/(?!\/)/.test(location.state.from) &&
+    !/^\/(login|signup|pending)(?:[/?#]|$)/.test(location.state.from)
+      ? location.state.from
+      : '/shelf';
   const { user, loading, isAdmin, isVerified, error: accountError, refresh } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,7 +25,11 @@ export default function Login() {
   const [unconfirmed, setUnconfirmed] = useState(false);
   if (!loading && user && !accountError)
     return (
-      <Navigate to={isAdmin ? '/admin/verification' : isVerified ? '/shelf' : '/pending'} replace />
+      <Navigate
+        to={isAdmin ? '/admin/verification' : isVerified ? from : '/pending'}
+        state={{ from }}
+        replace
+      />
     );
   async function submit(event) {
     event.preventDefault();
@@ -49,6 +62,12 @@ export default function Login() {
     <section className="auth-page page-section">
       <h1>Welcome back</h1>
       <p>Log in with your BulSU student email.</p>
+      {confirmationExpired && (
+        <p role="alert" className="notice-card">
+          This email confirmation link is invalid or has expired. Enter your student email below to
+          request a new link, or log in if you already confirmed your email.
+        </p>
+      )}
       <form className="form-stack" onSubmit={submit}>
         <Field
           label="BulSU email"
@@ -85,8 +104,8 @@ export default function Login() {
           <Button onClick={refresh}>Retry loading account</Button>
         </div>
       )}
-      {unconfirmed && (
-        <Button variant="secondary" onClick={resend} disabled={busy}>
+      {(unconfirmed || confirmationExpired) && (
+        <Button variant="secondary" onClick={resend} disabled={busy || !isStudentEmail(email)}>
           Resend confirmation email
         </Button>
       )}

@@ -5,6 +5,8 @@ import ItemCard from '../components/items/ItemCard';
 import Tabs from '../components/ui/Tabs';
 import Button from '../components/ui/Button';
 import RequestList from '../components/requests/RequestList';
+import { useState } from 'react';
+import DeleteItemModal from '../components/modals/DeleteItemModal';
 
 const tabs = [
   { value: 'requests', label: 'Requests' },
@@ -15,6 +17,7 @@ const tabs = [
 
 export default function MyListings() {
   const { user } = useAuth();
+  const [deleting, setDeleting] = useState(null);
   const [params, setParams] = useSearchParams();
   const tab = tabs.some((entry) => entry.value === params.get('tab'))
     ? params.get('tab')
@@ -41,7 +44,7 @@ export default function MyListings() {
             )}
             <div className="item-grid">
               {items.map((item) => (
-                <ItemCard key={item.id} item={item} editable />
+                <ItemCard key={item.id} item={item} editable onDelete={setDeleting} />
               ))}
             </div>
             {loading && <p role="status">Loading your listings…</p>}
@@ -57,6 +60,9 @@ export default function MyListings() {
           <RequestList key={`${user.id}:${tab}`} userId={user.id} role={tab} />
         )}
       </Tabs>
+      {deleting && (
+        <DeleteItemModal item={deleting} onClose={() => setDeleting(null)} onDeleted={retry} />
+      )}
     </section>
   );
 }

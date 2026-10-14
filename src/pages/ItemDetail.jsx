@@ -12,6 +12,7 @@ import AvailabilityCalendar from '../components/items/AvailabilityCalendar';
 import useAvailability from '../hooks/useAvailability';
 import useItemRequest from '../hooks/useItemRequest';
 import { canRequestAgain } from '../lib/requestStates';
+import CommentList from '../components/items/CommentList';
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -138,6 +139,7 @@ export default function ItemDetail() {
                 dates={dates}
                 onChange={setDates}
                 maximum={item.max_borrow_days}
+                readOnly={ownItem}
               />
             )}
             <div className="detail-desktop-action">{requestButton}</div>
@@ -168,12 +170,11 @@ export default function ItemDetail() {
           </p>
         </div>
         <div className="detail-comments">
-          <h2>Questions and comments</h2>
-          <p className="muted">Comments will be available in Phase 6.</p>
+          <CommentList key={id} itemId={id} />
         </div>
       </div>
       <div className="detail-mobile-action">{requestButton}</div>
-      <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} />
+      <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} returnTo={`/items/${id}`} />
       {requestOpen && (
         <RequestBorrowModal
           item={item}
@@ -186,6 +187,7 @@ export default function ItemDetail() {
           photo={expandedPhoto}
           title={item.title}
           total={item.item_photos.length}
+          photos={item.item_photos}
           onClose={() => setExpandedPhoto(null)}
         />
       )}
