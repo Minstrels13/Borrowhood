@@ -1,6 +1,6 @@
 # Borrowhood
 
-BulSU item lending and borrowing app. Phase 2 implements account verification; Phase 3 adds listing creation/editing, photos, the shelf, item detail and My listings. Apply the additive listing migrations using [Phase 3 setup and acceptance](docs/phase-3-setup.md). Phase 2 photo-security manual step 9 is deferred to team QA. Requests/calendar, full profiles/trust history and comments remain in later phases.
+BulSU item lending and borrowing app. Phase 2 implements account verification; Phase 3 adds listings/photos; Phase 4 adds requests, availability, handover/return condition records and Borrowing/Lending lists. Follow [Phase 3 setup](docs/phase-3-setup.md), then the additive migrations and acceptance checks in [Phase 4 setup](docs/phase-4-setup.md). Earlier photo-security checks and Phase 3 bugs remain with team QA. Full profiles/trust history and comments remain in later phases.
 
 ## Run and verify
 
@@ -10,6 +10,7 @@ Use Node.js 22.12+ and pnpm 11:
 pnpm install --frozen-lockfile
 pnpm dev
 pnpm check:tokens
+pnpm check:requests
 pnpm build
 pnpm preview
 ```

@@ -25,7 +25,12 @@ export default function ItemCard({ item, preview = false, editable = false }) {
       <div className="item-card__body">
         <h3>{preview ? title : <Link to={`/items/${item.id}`}>{title}</Link>}</h3>
         <p className="small muted">
-          {item.category || 'Category'} · {item.is_active === false ? 'Unavailable' : 'Available'}
+          {item.category || 'Category'} ·{' '}
+          {item.is_active === false
+            ? 'Unavailable'
+            : item.available_now === false
+              ? 'Reserved today'
+              : 'Available'}
         </p>
         <p>
           <strong>{item.listing_type === 'rent' ? 'For rent' : 'Free'}</strong>

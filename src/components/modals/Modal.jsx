@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef } from 'react';
 import Icon from '../ui/Icon';
 
 export default function Modal({ open, onClose, title, children, className = '' }) {
@@ -9,6 +9,12 @@ export default function Modal({ open, onClose, title, children, className = '' }
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
   }, [open]);
+  useLayoutEffect(() => {
+    const dialog = ref.current;
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, []);
   function outsideClick(event) {
     if (event.target !== ref.current) return;
     const rect = ref.current.getBoundingClientRect();
@@ -30,7 +36,7 @@ export default function Modal({ open, onClose, title, children, className = '' }
         onClose();
       }}
       onClose={() => {
-        if (open) onClose();
+        if (open && !ref.current?.open) onClose();
       }}
       onClick={outsideClick}
     >

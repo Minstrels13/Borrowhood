@@ -56,11 +56,35 @@ Phase 3 is implemented locally; apply the additive 010/011/012 migrations using 
 
 Keep supabase/tests near ten meaningful checks, matching the security overview. No generated production records. Checks await their database slices.
 
-## Overdue demo — finalize in Phase 4
+## Phase 4 review gate
 
-Use real admin/owner/borrower team BulSU accounts. After owner confirms handover, a trusted operator uses Supabase SQL editor to move the selected request's end_date to yesterday. If needed, adjust start_date to keep a valid one-day interval; preserve overlap/duration and other constraints. Target one BH reference and inspect it before updating. Do not disable triggers/RLS.
+See [Phase 4 setup and ten acceptance scenarios](phase-4-setup.md). Apply 020 → 021 → 022 after the existing migrations. Phase 3 QA is running separately; include its reported bugs before the Phase 4 push. Local tests do not establish live database/storage acceptance.
 
-Exact executable SQL will be documented and verified against the actual Phase 4 schema/date guard. The operator exception must use trusted database session identity; browser roles cannot impersonate it. There is no app override.
+## Overdue demo — trusted SQL editor only
 
-Refresh both accounts: owner sees due date/days late and Confirm return; borrower sees overdue copy with no action. Confirm return through owner UI and inspect history/trust. This procedure cannot run in Phase 1 because requests/guards do not exist.
+1. Use real admin/owner/borrower team BulSU accounts. Owner and borrower finish request → approval → handover through the app. Copy the actual `BH-…` reference and UUID from its detail URL. Wake a paused Supabase project before the demo.
+2. Open Supabase SQL Editor as the trusted project operator (the normal `postgres` dashboard role). The app's admin profile is not this database role. Inspect only the selected request and save its original dates:
+
+```sql
+select id, reference, status, start_date, end_date, handed_over_at
+from public.requests
+where reference = 'BH-REPLACE_WITH_ACTUAL_REFERENCE';
+```
+
+3. Replace the placeholder UUID below with that exact request ID. This intentionally changes its booking dates to a valid one-day interval ending yesterday in Manila. Run only for the agreed demo loan; normal FK/check/exclusion constraints remain enabled. If yesterday overlaps another reservation for that listing, the update fails: choose an unreserved past demo date instead. Do not disable constraints, triggers or RLS.
+
+```sql
+begin;
+update public.requests
+set start_date = (now() at time zone 'Asia/Manila')::date - 1,
+    end_date = (now() at time zone 'Asia/Manila')::date - 1,
+    updated_at = now()
+where id = 'REPLACE_WITH_ACTUAL_REQUEST_UUID'::uuid
+  and status = 'handed_over'
+returning id, reference, status, start_date, end_date;
+commit;
+```
+
+4. Confirm exactly one expected row is returned. If zero, stop and inspect the selected ID/status. The stored status stays `handed_over`; Overdue is a display derived from its due date. Browser roles have no direct request writes and the transition function accepts no date edits; no guard trigger or application override is used to bypass this rule. Privileged dashboard edits are trusted and ordinary database constraints still apply.
+5. Refresh both participants' request pages. Owner sees due date/days late and Confirm return. Borrower sees the overdue reminder and no actions. Confirm return through the owner UI to record a real late return. Phase 5 will aggregate this outcome into trust/history. To undo a date-only demo before return, restore the exact saved start/end dates with an equivalent targeted SQL update, subject to the same overlap constraints.
 

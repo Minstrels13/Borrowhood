@@ -4,8 +4,10 @@ import useItems from '../hooks/useItems';
 import ItemCard from '../components/items/ItemCard';
 import Tabs from '../components/ui/Tabs';
 import Button from '../components/ui/Button';
+import RequestList from '../components/requests/RequestList';
 
 const tabs = [
+  { value: 'requests', label: 'Requests' },
   { value: 'borrowing', label: 'Borrowing' },
   { value: 'lending', label: 'Lending' },
   { value: 'listings', label: 'My listings' },
@@ -16,7 +18,7 @@ export default function MyListings() {
   const [params, setParams] = useSearchParams();
   const tab = tabs.some((entry) => entry.value === params.get('tab'))
     ? params.get('tab')
-    : 'listings';
+    : 'requests';
   const { items, total, loading, error, retry, loadMore } = useItems({ ownerId: user.id });
   return (
     <section className="container page-section">
@@ -52,10 +54,7 @@ export default function MyListings() {
             )}
           </>
         ) : (
-          <p>
-            {tab === 'borrowing' ? 'Borrowing' : 'Lending'} activity will be available after the
-            request lifecycle is implemented.
-          </p>
+          <RequestList key={`${user.id}:${tab}`} userId={user.id} role={tab} />
         )}
       </Tabs>
     </section>

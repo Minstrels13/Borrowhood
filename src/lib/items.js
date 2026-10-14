@@ -2,7 +2,7 @@ import { requireSupabase } from './supabase';
 import { pageSize } from '../config/items';
 import { compressImage } from './compressImage';
 
-const itemFields = '*, item_photos(id, storage_path, position)';
+const itemFields = '*, available_now, item_photos(id, storage_path, position)';
 
 async function withOwners(items) {
   const summaries = new Map();
@@ -21,10 +21,11 @@ async function withOwners(items) {
 }
 
 export async function getItems({ search = '', filters, sort = 'newest', offset = 0, ownerId }) {
-  let query = requireSupabase()
-    .from('items')
-    .select(itemFields, { count: 'exact' })
-    .is('deleted_at', null);
+  const source =
+    filters?.available && !ownerId
+      ? requireSupabase().rpc('available_items', {}, { count: 'exact' })
+      : requireSupabase().from('items');
+  let query = source.select(itemFields, { count: 'exact' }).is('deleted_at', null);
   if (ownerId) query = query.eq('owner_id', ownerId);
   else query = query.eq('is_active', true);
   if (search.trim()) query = query.ilike('title', `%${search.trim().replace(/[\\%_]/g, '\\$&')}%`);

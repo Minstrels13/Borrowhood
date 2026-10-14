@@ -400,6 +400,9 @@ input[aria-invalid='true'] {
   background: currentColor;
 }
 .modal {
+  font-size: var(--text-md);
+  line-height: var(--line-body);
+  overflow-wrap: anywhere;
   border: var(--border-thin) solid var(--color-border);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: 0;
@@ -916,6 +919,23 @@ html:has(dialog[open]) {
 .owner-summary > span {
   min-width: 0;
 }
+.owner-summary__name {
+  min-width: 0;
+  min-height: var(--tap-min);
+  padding: var(--space-1) 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.owner-summary__name:hover {
+  text-decoration: underline;
+}
 .post-layout,
 .detail-layout,
 .form-columns {
@@ -960,32 +980,85 @@ html:has(dialog[open]) {
   background: transparent;
   cursor: zoom-in;
 }
-.modal.image-viewer {
-  width: fit-content;
+.modal.photo-viewer {
+  width: 100%;
   max-width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
 }
-.image-viewer[open] {
+.photo-viewer[open] {
   display: flex;
   flex-direction: column;
 }
-.image-viewer .modal__header {
+.photo-viewer .modal__header {
+  flex-shrink: 0;
+  padding-top: max(var(--space-4), env(safe-area-inset-top));
+}
+.photo-viewer .modal__header h2 {
+  min-width: 0;
+}
+.photo-viewer .modal__header .icon-button {
   flex-shrink: 0;
 }
-.image-viewer .modal__body {
-  overflow: auto;
+.photo-viewer .modal__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
   min-height: 0;
+  padding: 0;
+  overflow: hidden;
 }
-.image-viewer__image {
+.photo-viewer__viewport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-4);
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--color-surface);
+}
+.photo-viewer__image {
   display: block;
   width: auto;
   height: auto;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.photo-viewer__viewport--actual {
+  display: block;
+}
+.photo-viewer__viewport--actual .photo-viewer__image {
   max-width: none;
+  max-height: none;
   margin-inline: auto;
 }
+.photo-viewer__controls {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: var(--space-3) var(--space-4);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  border-top: var(--border-thin) solid var(--color-border);
+}
 @media (min-width: 768px) {
-  .modal.image-viewer {
-    max-width: calc(100% - var(--space-8));
+  .modal.photo-viewer {
+    width: calc(100% - var(--space-6));
+    max-width: var(--content-max);
+    height: var(--modal-max-height);
+    max-height: var(--modal-max-height);
+    margin: auto;
+    border: var(--border-thin) solid var(--color-border);
+    border-radius: var(--radius-lg);
   }
 }
 .detail-identity {
@@ -1055,6 +1128,65 @@ html:has(dialog[open]) {
 .detail-mobile-action .button {
   width: 100%;
 }
+.detail-mobile-action .detail-owner-actions {
+  flex-wrap: nowrap;
+}
+.detail-mobile-action .detail-owner-actions .button {
+  flex: 1;
+  width: auto;
+}
+.item-requests {
+  overflow-wrap: anywhere;
+}
+.item-request-list {
+  display: grid;
+  gap: var(--space-4);
+  list-style: none;
+  padding: 0;
+  margin-block: var(--space-5);
+}
+.item-request-card {
+  padding: var(--space-5);
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  min-width: 0;
+}
+.item-request-card__heading {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+.item-request-card__heading .owner-summary {
+  min-width: 0;
+  flex: 1 1 100%;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+.item-request-card__heading .owner-summary > div:first-child {
+  flex-shrink: 0;
+}
+.item-request-card__heading .owner-summary > div:last-child {
+  min-width: 0;
+}
+.item-request-card__heading h2 {
+  font-size: var(--text-lg);
+  margin: 0;
+}
+.item-request-card__heading p {
+  margin-block: var(--space-1) 0;
+}
+.item-request-card__message {
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
+}
+@media (min-width: 768px) {
+  .item-request-card__heading .owner-summary {
+    flex-basis: 0;
+  }
+}
 .item-detail {
   padding-bottom: calc(var(--tab-bar-height) + var(--space-6));
 }
@@ -1107,7 +1239,7 @@ html:has(dialog[open]) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .detail-layout {
-    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.5fr) minmax(var(--calendar-panel-min), 1fr);
     grid-template-areas: 'gallery summary' 'description summary' 'comments summary';
     align-items: start;
   }
@@ -1158,5 +1290,263 @@ html:has(dialog[open]) {
   .queue__student {
     flex-wrap: wrap;
     overflow-wrap: anywhere;
+  }
+}
+
+.calendar {
+  min-width: 0;
+  margin-block: var(--space-4);
+}
+.calendar__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+.calendar__heading .button {
+  margin-top: 0;
+  min-width: var(--tap-min);
+  padding: var(--space-2);
+  font-size: var(--text-xl);
+}
+.calendar__heading h3 {
+  font-size: var(--text-md);
+}
+.calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+.calendar__weekday {
+  text-align: center;
+  padding-block: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+.calendar__day {
+  min-height: var(--tap-min);
+  min-width: var(--tap-min);
+  padding: 0;
+  border: var(--border-thin) solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-size: var(--text-sm);
+}
+.calendar__day[aria-current='date'] {
+  border-color: var(--color-border-strong);
+}
+.calendar__day--blocked,
+.calendar__legend-blocked {
+  background: var(--color-surface-alt);
+  text-decoration: line-through;
+}
+.calendar__day--selected,
+.calendar__legend-selected {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.calendar__day:disabled {
+  cursor: default;
+}
+.calendar__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.calendar__legend span {
+  padding: var(--space-1);
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.request-detail h1 {
+  font-size: var(--text-2xl);
+}
+.request-detail h2 {
+  font-size: var(--text-xl);
+}
+.request-detail,
+.request-list__row {
+  overflow-wrap: anywhere;
+}
+.request-layout {
+  display: grid;
+  grid-template-areas: 'action' 'participants' 'message' 'meetup' 'conditions';
+  gap: var(--space-5);
+}
+.request-layout > * {
+  min-width: 0;
+}
+.request-action-panel {
+  grid-area: action;
+  margin: 0;
+  align-self: start;
+}
+.request-action-panel .actions:empty {
+  display: none;
+}
+.request-participants {
+  grid-area: participants;
+  display: grid;
+  gap: var(--space-4);
+}
+.request-participants .notice-card {
+  margin: 0;
+}
+.request-participant-name {
+  font-size: var(--text-md);
+}
+.request-message {
+  grid-area: message;
+}
+.request-meetup {
+  grid-area: meetup;
+}
+.request-conditions {
+  grid-area: conditions;
+}
+.condition-records {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+.condition-record {
+  margin: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--border-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg);
+}
+.condition-record__header {
+  min-height: var(--condition-record-header-height);
+  padding: var(--space-4);
+}
+.condition-record__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--step-size);
+}
+.condition-record__date {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+.condition-record__date span {
+  display: block;
+}
+.condition-record__media {
+  display: grid;
+  place-items: center;
+  aspect-ratio: var(--condition-record-photo-ratio);
+  max-height: var(--condition-photo-height);
+  background: var(--color-surface);
+  border-block: var(--border-thin) solid var(--color-border);
+  overflow: hidden;
+}
+.condition-record__media > p,
+.condition-record__media > div {
+  padding: var(--space-3);
+  text-align: center;
+}
+.condition-record__open {
+  height: 100%;
+  min-height: 0;
+}
+.condition-record__photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.condition-record__notes {
+  padding: var(--space-4);
+  flex: 1;
+}
+.condition-record__notes h4 {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+}
+.condition-record__notes p:last-child {
+  margin-bottom: 0;
+}
+.condition-photo-preview img {
+  display: block;
+  width: 100%;
+  max-height: var(--condition-photo-height);
+  object-fit: contain;
+}
+.lifecycle {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+  gap: var(--space-2);
+  margin-block: var(--space-5);
+}
+.lifecycle li {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+.lifecycle li > span:first-child {
+  display: grid;
+  place-items: center;
+  width: var(--step-size);
+  height: var(--step-size);
+  border: var(--border-medium) dashed var(--color-border-strong);
+  border-radius: var(--radius-pill);
+}
+.lifecycle .lifecycle__reached {
+  color: var(--color-text);
+  font-weight: var(--font-semibold);
+}
+.lifecycle .lifecycle__reached > span:first-child {
+  border-style: solid;
+  background: var(--color-surface-alt);
+}
+.lifecycle [aria-current='step'] > span:first-child {
+  border-width: var(--border-thick);
+}
+.request-list {
+  display: grid;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+.request-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+}
+.request-list__row > div {
+  min-width: 0;
+  flex: 1 1 100%;
+}
+@media (min-width: 768px) {
+  .request-layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    grid-template-areas: 'participants action' 'message meetup' 'conditions meetup';
+  }
+  .request-participants,
+  .condition-records {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .request-list__row > div {
+    flex-basis: 0;
   }
 }

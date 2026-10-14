@@ -18,6 +18,8 @@ const Browse = lazy(() => import('./pages/Browse'));
 const ItemDetail = lazy(() => import('./pages/ItemDetail'));
 const PostItem = lazy(() => import('./pages/PostItem'));
 const MyListings = lazy(() => import('./pages/MyListings'));
+const RequestDetail = lazy(() => import('./pages/RequestDetail'));
+const ItemRequests = lazy(() => import('./pages/ItemRequests'));
 
 const UiPreview = import.meta.env.DEV ? lazy(() => import('./pages/UiPreview')) : null;
 
@@ -45,7 +47,9 @@ export default function App() {
             <Route element={<RequireVerified />}>
               <Route path="/items/new" element={<PostItem key="new" />} />
               <Route path="/items/:id/edit" element={<PostItem />} />
+              <Route path="/items/:id/requests" element={<ItemRequests />} />
               <Route path="/activity" element={<MyListings />} />
+              <Route path="/requests/:id" element={<RequestDetail />} />
             </Route>
             <Route element={<RequireAdmin />}>
               <Route path="/admin/verification" element={<AdminQueue />} />
