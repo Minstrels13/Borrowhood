@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import ItemPhoto from './ItemPhoto';
 import OwnerSummary from './OwnerSummary';
 import Button from '../ui/Button';
+import DeleteListingAction from './DeleteListingAction';
 
 export default function ItemCard({ item, preview = false, editable = false, onDelete }) {
   const title = item.title || 'Your item title';
@@ -47,21 +48,8 @@ export default function ItemCard({ item, preview = false, editable = false, onDe
               <Button variant="secondary" to={`/items/${item.id}/edit`}>
                 Edit listing
               </Button>
-              {onDelete && (
-                <Button
-                  variant="ghost"
-                  disabled={Boolean(item.request_counts?.active)}
-                  onClick={() => onDelete(item)}
-                >
-                  Delete listing
-                </Button>
-              )}
             </div>
-            {Boolean(item.request_counts?.active) && (
-              <p className="small muted">
-                Close pending requests and complete active loans before deleting.
-              </p>
-            )}
+            {onDelete && <DeleteListingAction item={item} onDelete={onDelete} />}
           </div>
         )}
       </div>

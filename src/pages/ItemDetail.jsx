@@ -13,15 +13,18 @@ import useAvailability from '../hooks/useAvailability';
 import useItemRequest from '../hooks/useItemRequest';
 import { canRequestAgain } from '../lib/requestStates';
 import CommentList from '../components/items/CommentList';
+import DeleteItemModal from '../components/modals/DeleteItemModal';
+import DeleteListingAction from '../components/items/DeleteListingAction';
 
 export default function ItemDetail() {
   const { id } = useParams();
   const { user, isVerified } = useAuth();
-  const { item, loading, error, retry } = useItem(id);
+  const { item, loading, error, retry } = useItem(id, isVerified);
   const [selected, setSelected] = useState(0);
   const [wall, setWall] = useState(false);
   const [expandedPhoto, setExpandedPhoto] = useState(null);
   const [requestOpen, setRequestOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [dates, setDates] = useState({ start: '', end: '' });
   const availability = useAvailability(id);
   const ownItem = Boolean(user && item?.owner_id === user.id);
@@ -143,6 +146,7 @@ export default function ItemDetail() {
               />
             )}
             <div className="detail-desktop-action">{requestButton}</div>
+            {ownItem && <DeleteListingAction item={item} onDelete={() => setDeleteOpen(true)} />}
             {!ownItem && alreadyRequested && (
               <p role="status">You have already sent a borrow request for this item.</p>
             )}
@@ -175,6 +179,13 @@ export default function ItemDetail() {
       </div>
       <div className="detail-mobile-action">{requestButton}</div>
       <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} returnTo={`/items/${id}`} />
+      {ownItem && deleteOpen && (
+        <DeleteItemModal
+          item={item}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={() => navigate('/activity?tab=listings', { replace: true })}
+        />
+      )}
       {requestOpen && (
         <RequestBorrowModal
           item={item}

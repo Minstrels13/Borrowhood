@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getItem } from '../lib/items';
 
-export default function useItem(id) {
+export default function useItem(id, includeRequestCounts = false) {
   const [revision, setRevision] = useState(0);
   const [state, setState] = useState({ item: null, loading: Boolean(id), error: '' });
   useEffect(() => {
@@ -11,7 +11,7 @@ export default function useItem(id) {
       return;
     }
     setState({ item: null, loading: true, error: '' });
-    getItem(id)
+    getItem(id, includeRequestCounts)
       .then((item) => {
         if (active) setState({ item, loading: false, error: '' });
       })
@@ -21,6 +21,6 @@ export default function useItem(id) {
     return () => {
       active = false;
     };
-  }, [id, revision]);
+  }, [id, revision, includeRequestCounts]);
   return { ...state, retry: () => setRevision((value) => value + 1) };
 }

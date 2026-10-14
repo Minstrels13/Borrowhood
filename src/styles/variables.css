@@ -12,7 +12,8 @@
   --color-primary: #262626;
   --color-on-primary: #ffffff;
   --color-focus: #262626;
-  --color-danger: #262626;
+  --color-danger: #b42318;
+  --color-danger-surface: #fff1f0;
   --color-placeholder: #e2e2e2;
   --color-backdrop: rgb(0 0 0 / 45%);
   --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -71,10 +72,6 @@
   --calendar-panel-min: 358px;
   --item-card-min: 230px;
   --profile-sidebar-min: 220px;
-  --hero-image-min: 160px;
-  --hero-image-max: 280px;
-  --hero-image-fluid: 28dvh;
-  --section-spacing-fluid: 2dvh;
   --condition-photo-height: 320px;
   --condition-record-header-height: 112px;
   --condition-record-photo-ratio: 4 / 3;

@@ -16,7 +16,11 @@ export default function Field({ label, hint, error, id, children, ...props }) {
         />
       )}
       {description && (
-        <p id={`${inputId}-help`} className={error ? 'field__error' : 'field__hint'}>
+        <p
+          id={`${inputId}-help`}
+          role={error ? 'alert' : undefined}
+          className={error ? 'field__error' : 'field__hint'}
+        >
           {description}
         </p>
       )}

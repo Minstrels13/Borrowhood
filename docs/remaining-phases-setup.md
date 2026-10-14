@@ -9,6 +9,8 @@ First confirm that migrations 001–003, 010–012 and 020–024 have already su
 1. `supabase/migrations/030_profile_history.sql`
 2. `supabase/migrations/031_listing_agreements.sql`
 3. `supabase/migrations/040_comments.sql`
+4. `supabase/migrations/041_cancelled_request_retry.sql` — allows a fresh request after cancellation, retaining the earlier request in history. Required for the cancellation retry update.
+5. `supabase/migrations/042_delete_listing_decline_pending.sql` — owner deletion automatically declines pending requests. Approved and ongoing loans still prevent deletion. Apply before using the updated delete controls.
 
 Paste plain SQL starting with `begin;`, without Markdown fences or a preceding backslash. Each file is transactional. On an error, preserve the full message; an unsuccessful transaction should not be treated as installed. A successful file should not be rerun. SQL Editor may flag UPDATE/REVOKE/function definitions; these files do not reset tables or purge data.
 
@@ -41,7 +43,7 @@ Wake a paused Supabase project before QA/demo. Allow for email sending limits. U
 
 The remaining features and review fixes are implemented locally. Build/token/request/trust checks passed. The Supabase client is split into a separate cached chunk, removing the previous oversized main-chunk warning. Private layout checks used temporary local adapters under Strict Mode and made no Supabase mutations. Team acceptance, Storage tests, applied migration status, email delivery and Vercel validation remain open.
 
-Use **`qa-review-gate.md`** for the full Phases 1–7 checklist. Older phase gates and `website-ui-ux-review.md` remain historical evidence; they do not supersede this handoff.
+Use **`qa-review-gate.md`** for the full Phases 1–7 checklist and current request/deletion behavior. Superseded plans, reviews and duplicate phase checklists have been removed. Phase 2–4 setup guides retain the original database/bootstrap instructions; later migrations in this guide supersede their original request rules. The latest proposed UX work is in `ux-plan.md`, supported by `ux-audit.md`.
 
 ### Local evidence — 14 October 2026
 

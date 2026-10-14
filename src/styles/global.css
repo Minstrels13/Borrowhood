@@ -122,6 +122,35 @@ main:focus-visible {
   border-color: transparent;
   padding-inline: var(--space-3);
 }
+.button--danger,
+.button--danger-secondary {
+  gap: var(--space-2);
+  border-color: var(--color-danger);
+}
+.button--danger {
+  background: var(--color-danger);
+  color: var(--color-on-primary);
+}
+.button--danger-secondary {
+  background: var(--color-bg);
+  color: var(--color-danger);
+}
+.button--danger-secondary:hover:not(:disabled) {
+  background: var(--color-danger-surface);
+}
+.listing-delete {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: var(--border-thin) solid var(--color-border);
+}
+.listing-delete p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.delete-listing-modal__actions .button {
+  flex: 1 1 auto;
+}
 .button:hover:not(:disabled) {
   text-decoration: underline;
 }
@@ -360,6 +389,17 @@ input[aria-invalid='true'] {
 }
 .field__error {
   color: var(--color-danger);
+  font-weight: var(--font-semibold);
+}
+.auth-error {
+  margin: 0;
+  padding: var(--space-3);
+  border: var(--border-thin) solid var(--color-danger);
+  border-inline-start-width: var(--border-thick);
+  border-radius: var(--radius-md);
+  background: var(--color-danger-surface);
+  color: var(--color-danger);
+  font-weight: var(--font-semibold);
 }
 .avatar {
   display: inline-flex;
@@ -555,23 +595,19 @@ html:has(dialog[open]) {
     grid-template-columns: 1fr 1fr;
     align-items: center;
     gap: var(--space-8);
-    padding-block: clamp(var(--space-4), var(--section-spacing-fluid), var(--space-6));
+    padding-block: var(--space-7);
   }
   .hero h1 {
     font-size: clamp(var(--text-hero-mobile), var(--hero-fluid-size), var(--text-hero-desktop));
   }
   .hero__description {
-    font-size: var(--text-md);
-    margin-block: var(--space-4);
+    font-size: var(--text-lg);
   }
   .hero .button {
     width: auto;
-    min-height: var(--tap-min);
   }
   .hero__image {
     aspect-ratio: var(--hero-ratio);
-    justify-self: center;
-    max-height: clamp(var(--hero-image-min), var(--hero-image-fluid), var(--hero-image-max));
   }
   .step-grid,
   .trust-grid {
@@ -579,17 +615,10 @@ html:has(dialog[open]) {
     gap: var(--space-5);
   }
   .how {
-    padding-block: clamp(var(--space-3), var(--section-spacing-fluid), var(--space-5));
+    padding-block: var(--space-7) var(--space-7);
   }
   .trust-section {
-    padding-block: clamp(var(--space-3), var(--section-spacing-fluid), var(--space-5));
-  }
-  .step-grid,
-  .trust-grid {
-    margin-top: var(--space-3);
-  }
-  .step-card {
-    padding: var(--space-4);
+    padding-block: var(--space-6) var(--space-7);
   }
   .modal {
     width: calc(100% - var(--space-6));

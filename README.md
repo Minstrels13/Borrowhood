@@ -22,7 +22,7 @@ Copy .env.example to .env and set the Supabase URL and anon/publishable key, the
 
 ## Supabase
 
-Apply each migration once in numeric order: 001–003, 010–012, 020–024, then **030 → 031 → 040**. The new files are additive and retain accounts/data. See [Phase 2 setup](docs/phase-2-setup.md) for initial Auth/admin configuration and [remaining-phase setup](docs/remaining-phases-setup.md) for the new functions/policies. Do not reset or rerun successful migrations.
+Apply each migration once in numeric order: 001–003, 010–012, 020–024, then **030 → 031 → 040 → 041 → 042**. The new files are additive and retain accounts/data. See [Phase 2 setup](docs/phase-2-setup.md) for initial Auth/admin configuration and [remaining-phase setup](docs/remaining-phases-setup.md) for the new functions/policies. Do not reset or rerun successful migrations.
 
 Trust comes from actual completed borrows: 100 minus 8 per late return and 15 per damaged return, floored at zero. Minor wear has no penalty. New means no completions; below 70 is Needs attention; five completions and 90+ is Trusted; other completed borrowers are Reliable. Full profiles/history require verified login. Private request notes/messages/evidence remain participant-only. See the [security overview](docs/security-overview.md).
 
