@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import Modal from './Modal';
 import Button from '../ui/Button';
-import Field from '../ui/Field';
+import ProfileEditorFields from './ProfileEditorFields';
 import ProfilePhoto from '../ui/ProfilePhoto';
+import Avatar from '../ui/Avatar';
 import { useAuth } from '../../context/AuthContext';
 import { compressImage } from '../../lib/compressImage';
 import {
@@ -22,6 +23,17 @@ export default function EditProfileModal({ open, onClose, resubmit = false }) {
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const formId = useId();
+  useEffect(() => {
+    if (!open || !file) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [open, file]);
   const draft = useUnsavedChanges(
     open &&
       (name !== (profile?.full_name || '') ||
@@ -71,57 +83,39 @@ export default function EditProfileModal({ open, onClose, resubmit = false }) {
         draft.close(onClose);
       }}
       title={resubmit ? 'Update details and resubmit' : 'Edit profile'}
+      size="profile"
+      className="profile-editor"
+      footer={
+        <>
+          <Button type="submit" form={formId} size="large" disabled={busy} busy={busy}>
+            {busy ? 'Saving…' : resubmit ? 'Submit for review' : 'Save changes'}
+          </Button>
+          <Button variant="secondary" size="large" onClick={() => draft.close(onClose)} disabled={busy}>
+            Cancel
+          </Button>
+        </>
+      }
     >
-      {open && profile?.photo_path && (
-        <ProfilePhoto path={profile.photo_path} name={profile.full_name} size="lg" />
-      )}
-      <form className="form-stack" onSubmit={submit}>
-        <fieldset className="form-stack post-fields" disabled={busy}>
-          <legend className="sr-only">Profile details</legend>
-          <Field
-            label="Full name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            minLength={2}
-            maxLength={100}
-            required
-          />
-          <Field
-            label="Course, year and section"
-            value={course}
-            onChange={(e) => setCourse(e.target.value)}
-            minLength={2}
-            maxLength={100}
-            required
-          />
-          <Field
-            label="BulSU email"
-            value={user?.email || ''}
-            readOnly
-            hint="Your student email cannot be changed."
-          />
-          <Field
-            label={profile?.photo_path ? 'Change profile photo' : 'Profile photo'}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={(e) => setFile(e.target.files[0] || null)}
-            required={!profile?.photo_path}
-            hint="A clear photo of you. JPEG, PNG or WebP, up to 10 MB."
-          />
-          {error && (
-            <p role="alert" className="field__error">
-              {error}
-            </p>
+      <form id={formId} className="form-stack" onSubmit={submit}>
+        <ProfileEditorFields
+          name={name}
+          course={course}
+          email={user?.email || ''}
+          file={file}
+          hasPhoto={Boolean(profile?.photo_path)}
+          busy={busy}
+          error={error}
+          onNameChange={(e) => setName(e.target.value)}
+          onCourseChange={(e) => setCourse(e.target.value)}
+          onFileChange={(e) => setFile(e.target.files[0] || null)}
+          photo={previewUrl ? (
+            <Avatar src={previewUrl} name="Selected profile photo" size="lg" />
+          ) : open && profile?.photo_path ? (
+            <ProfilePhoto path={profile.photo_path} name={profile.full_name} size="lg" />
+          ) : (
+            <Avatar size="lg" name="Your profile photo" />
           )}
-          <div className="actions">
-            <Button variant="secondary" onClick={() => draft.close(onClose)} disabled={busy}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={busy}>
-              {busy ? 'Saving…' : resubmit ? 'Submit for review' : 'Save changes'}
-            </Button>
-          </div>
-        </fieldset>
+        />
       </form>
     </Modal>
   );

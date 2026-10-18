@@ -4,6 +4,7 @@ import { formatDate, manilaToday } from '../../lib/dates';
 import { conditions } from '../modals/RequestActionModal';
 import PhotoViewer from '../modals/PhotoViewer';
 import Button from '../ui/Button';
+import Chip from '../ui/Chip';
 
 export default function ConditionRecord({ request, event }) {
   const handover = event === 'handover';
@@ -38,7 +39,7 @@ export default function ConditionRecord({ request, event }) {
     };
   }, [path, revision]);
   return (
-    <section className="condition-record">
+    <section className={`condition-record${!timestamp ? ' condition-record--pending' : ''}${!path ? ' condition-record--no-photo' : ''}`}>
       <header className="condition-record__header">
         <div className="condition-record__heading">
           <h3>{handover ? 'At handover' : 'At return'}</h3>
@@ -50,13 +51,25 @@ export default function ConditionRecord({ request, event }) {
               <span>{clock} · Manila</span>
             </time>
           </p>
-        ) : (
-          <p className="condition-record__date">Not recorded yet</p>
-        )}
+        ) : null}
       </header>
-      <div className="condition-record__media">
-        {timestamp && path ? (
-          error ? (
+      <div className="condition-record__notes">
+        <div className="condition-record__heading">
+          {timestamp && <h4>Notes</h4>}
+          {!handover && timestamp && (
+            <Chip label={conditions[request.return_condition]} tone={request.return_condition === 'damaged' ? 'danger' : request.return_condition === 'minor_wear' ? 'clay' : 'info'} />
+          )}
+        </div>
+        <p className="preserve-lines">
+          {timestamp
+            ? notes || 'No additional notes.'
+            : `Recorded when the owner confirms ${handover ? 'handover' : 'return'}.`}
+        </p>
+        {timestamp && !path && <p className="small muted">No photo added</p>}
+        {src && !error && <p className="small muted">Click photo to enlarge</p>}
+      </div>
+      {timestamp && path && <div className="condition-record__media">
+        {error ? (
             <div role="alert">
               <p>{error}</p>
               <Button variant="secondary" onClick={() => setRevision((value) => value + 1)}>
@@ -79,27 +92,8 @@ export default function ConditionRecord({ request, event }) {
             </button>
           ) : (
             <p role="status">Loading photo…</p>
-          )
-        ) : (
-          <p className="muted">
-            {timestamp ? 'No photo added' : `Awaiting ${handover ? 'handover' : 'return'}`}
-          </p>
-        )}
-      </div>
-      <div className="condition-record__notes">
-        <div className="condition-record__heading">
-          <h4>Notes</h4>
-          {!handover && timestamp && (
-            <span className="chip">{conditions[request.return_condition]}</span>
           )}
-        </div>
-        <p className="preserve-lines">
-          {timestamp
-            ? notes || 'No additional notes.'
-            : `Recorded when the owner confirms ${handover ? 'handover' : 'return'}.`}
-        </p>
-        {src && !error && <p className="small muted">Click photo to enlarge</p>}
-      </div>
+      </div>}
       {viewing && src && (
         <PhotoViewer
           photo={{ url: src, index: 0 }}

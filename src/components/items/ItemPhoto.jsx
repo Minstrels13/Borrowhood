@@ -3,7 +3,7 @@ import { itemPhotoUrl } from '../../lib/items';
 import ImagePlaceholder from '../ui/ImagePlaceholder';
 import Button from '../ui/Button';
 
-export default function ItemPhoto({ path, src, alt, retryable = true, onOpen }) {
+export default function ItemPhoto({ path, src, alt, retryable = true, onOpen, loading = 'lazy' }) {
   const [url, setUrl] = useState(null);
   const [failed, setFailed] = useState(false);
   const [revision, setRevision] = useState(0);
@@ -33,13 +33,15 @@ export default function ItemPhoto({ path, src, alt, retryable = true, onOpen }) 
             aria-label={`Enlarge ${alt}`}
             onClick={() => onOpen(src || url)}
           >
-            <img src={src || url} alt={alt} onError={() => setFailed(true)} />
+            <img src={src || url} alt={alt} loading={loading} onError={() => setFailed(true)} />
           </button>
         ) : (
-          <img src={src || url} alt={alt} onError={() => setFailed(true)} />
+          <img src={src || url} alt={alt} loading={loading} onError={() => setFailed(true)} />
         )
       ) : (
         <ImagePlaceholder
+          icon="landscape"
+          className={failed ? 'image-placeholder--failed' : ''}
           label={failed ? 'Photo unavailable' : path ? 'Loading photo…' : 'No photo'}
         />
       )}

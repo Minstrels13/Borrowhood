@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Button from '../ui/Button';
 import { dateValue, formatDate, inclusiveDays, rangeError } from '../../lib/dates';
 import useManilaToday from '../../hooks/useManilaToday';
@@ -15,6 +15,15 @@ export default function AvailabilityCalendar({
 }) {
   const today = useManilaToday();
   const [month, setMonth] = useState(() => today.slice(0, 7));
+  const [focused, setFocused] = useState(today);
+  const dayButtons = useRef(new Map());
+  const moveFocus = useRef(false);
+  useEffect(() => {
+    if (moveFocus.current) {
+      dayButtons.current.get(focused)?.focus();
+      moveFocus.current = false;
+    }
+  }, [focused, month]);
   const first = new Date(`${month}-01T00:00:00Z`);
   const count = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + 1, 0)).getUTCDate();
   const heading = new Intl.DateTimeFormat('en-US', {
@@ -30,6 +39,32 @@ export default function AvailabilityCalendar({
   function select(day) {
     if (dates.start && !dates.end && day >= dates.start) onChange({ start: dates.start, end: day });
     else onChange({ start: day, end: '' });
+  }
+  function unavailableDay(day) {
+    return blocked.some((range) => day >= range.start_date && day <= range.end_date);
+  }
+  const firstEnabled = Array.from({ length: count }, (_, index) => `${month}-${String(index + 1).padStart(2, '0')}`)
+    .find((day) => day >= today && !unavailableDay(day));
+  const tabStop = focused.startsWith(month) && focused >= today && !unavailableDay(focused) ? focused : firstEnabled;
+  function keyboard(event, day) {
+    const offsets = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    const weekday = new Date(dateValue(day)).getUTCDay();
+    const offset = event.key === 'Home' ? -weekday : event.key === 'End' ? 6 - weekday : offsets[event.key];
+    if (offset === undefined || readOnly || disabled) return;
+    event.preventDefault();
+    const next = new Date(dateValue(day));
+    next.setUTCDate(next.getUTCDate() + offset);
+    let value = next.toISOString().slice(0, 10);
+    const direction = offset < 0 ? -1 : 1;
+    // Skip disabled dates for keyboard focus only; selection and range rules stay unchanged.
+    while (value >= today && unavailableDay(value)) {
+      next.setUTCDate(next.getUTCDate() + direction);
+      value = next.toISOString().slice(0, 10);
+    }
+    if (value < today) return;
+    moveFocus.current = true;
+    setFocused(value);
+    setMonth(value.slice(0, 7));
   }
   const error =
     dates.start && dates.end ? rangeError(dates.start, dates.end, maximum, blocked, today) : '';
@@ -68,6 +103,10 @@ export default function AvailabilityCalendar({
           return (
             <button
               key={day}
+              ref={(node) => { if (node) dayButtons.current.set(day, node); else dayButtons.current.delete(day); }}
+              tabIndex={day === tabStop ? 0 : -1}
+              onFocus={() => setFocused(day)}
+              onKeyDown={(event) => keyboard(event, day)}
               type="button"
               className={`calendar__day${unavailable ? ' calendar__day--blocked' : ''}${selected ? ' calendar__day--selected' : ''}`}
               disabled={readOnly || disabled || unavailable || day < today}
@@ -86,7 +125,7 @@ export default function AvailabilityCalendar({
         <span className="calendar__legend-blocked">Unavailable</span>
         {!readOnly && <span className="calendar__legend-selected">Your dates</span>}
       </div>
-      <p className="small" aria-live="polite">
+      <p className={`small calendar__summary${dates.start && dates.end ? ' calendar__summary--selected' : ''}`} aria-live="polite">
         {readOnly
           ? 'Reserved dates are unavailable. Review incoming requests using View requests.'
           : dates.start && dates.end
@@ -97,6 +136,7 @@ export default function AvailabilityCalendar({
       </p>
       {error && (
         <p className="field__error" role="alert">
+          <span aria-hidden="true">! </span>
           {error}
         </p>
       )}

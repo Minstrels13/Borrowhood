@@ -9,7 +9,9 @@ import Field from '../components/ui/Field';
 import ItemCard from '../components/items/ItemCard';
 import ItemPhoto from '../components/items/ItemPhoto';
 import { useToast } from '../components/ui/Toast';
-import Modal from '../components/modals/Modal';
+import PhotoUpload from '../components/ui/PhotoUpload';
+import Skeleton from '../components/ui/Skeleton';
+import { brand } from '../config/brand';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import { getStudentProfile } from '../lib/profiles';
 
@@ -32,7 +34,6 @@ export default function PostItem() {
   const [photos, setPhotos] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [trustLevel, setTrustLevel] = useState(null);
   const urls = useRef(new Set());
   const navigate = useNavigate();
@@ -161,9 +162,10 @@ export default function PostItem() {
   }
   if (loading)
     return (
-      <p className="container page-section" role="status">
-        Loading listing…
-      </p>
+      <section className="container page-section post-page" aria-busy="true">
+        <p className="sr-only" role="status">Loading listing…</p>
+        <div className="post-layout"><Skeleton variant="text" lines={8} /><Skeleton variant="card" lines={3} /></div>
+      </section>
     );
   if (loadError)
     return (
@@ -189,9 +191,10 @@ export default function PostItem() {
     owner: profile ? { ...profile, trust_level: trustLevel } : null,
   };
   return (
-    <section className="container page-section">
+    <>
+    <section className="container page-section post-page">
       <h1>{id ? 'Edit listing' : 'Post an item'}</h1>
-      <p>Share something other BulSU students can borrow.</p>
+      <p className="post-page__intro">Share something other BulSU students can borrow.</p>
       {id && (
         <p className="notice-card">
           Rental terms and meetup details cannot change while a loan is approved or ongoing.
@@ -199,7 +202,7 @@ export default function PostItem() {
         </p>
       )}
       <div className="post-layout">
-        <form onSubmit={submit}>
+        <form onSubmit={submit} aria-busy={busy}>
           <fieldset className="form-stack post-fields" disabled={busy}>
             <legend className="sr-only">Listing details</legend>
             <Field
@@ -257,7 +260,8 @@ export default function PostItem() {
               minLength={2}
               maxLength={1000}
             />
-            <fieldset className="listing-type">
+            <div className="form-columns listing-terms">
+            <fieldset className="listing-type segmented-control">
               <legend>Listing type</legend>
               {[
                 ['free', 'Free'],
@@ -286,16 +290,14 @@ export default function PostItem() {
                 hint="Just describe it. Payment is settled in person."
               />
             )}
-            <Field
+            </div>
+            <PhotoUpload
               label="Photos (up to 3)"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
+              count={photos.length}
               onChange={addPhotos}
-              disabled={busy || photos.length >= 3}
+              disabled={busy}
               hint="We resize photos for you. Show the item clearly in good light."
-            />
-            <div className="upload-previews">
+            >
               {photos.map((photo, index) => (
                 <div key={photo.key}>
                   <ItemPhoto path={photo.path} src={photo.src} alt={`Listing photo ${index + 1}`} />
@@ -304,7 +306,7 @@ export default function PostItem() {
                   </Button>
                 </div>
               ))}
-            </div>
+            </PhotoUpload>
             <Field
               label="Meetup note"
               name="meetup_note"
@@ -312,46 +314,39 @@ export default function PostItem() {
               onChange={update}
               maxLength={500}
             />
-            <Button
-              className="mobile-preview"
-              variant="secondary"
-              onClick={() => setPreviewOpen(true)}
-            >
-              Preview your listing
-            </Button>
+            <details className="mobile-listing-preview">
+              <summary>Preview your listing</summary>
+              <ItemCard item={preview} preview />
+            </details>
             {error && (
               <p role="alert" className="field__error">
                 {error}
               </p>
             )}
-            <div className="actions">
-              <Button type="submit">
+            <div className="actions post-page__actions">
+              <Button type="submit" size="large" busy={busy}>
                 {busy ? 'Saving…' : id ? 'Save changes' : 'Publish listing'}
               </Button>
-              <Button variant="secondary" onClick={() => navigate(id ? `/items/${id}` : '/shelf')}>
+              <Button variant="secondary" size="large" onClick={() => navigate(id ? `/items/${id}` : '/shelf')}>
                 Cancel
               </Button>
             </div>
           </fieldset>
         </form>
-        <aside className="listing-preview">
+        <aside className="listing-preview" aria-label="Listing preview">
           <h2>Preview</h2>
           <p>This is how your listing looks on the shelf.</p>
           <ItemCard item={preview} preview />
+          <div className="listing-preview__tips">
           <h3>Tips for a good listing</h3>
           <p>
             Add a clear photo. State the condition honestly. Suggest a public meetup spot on campus.
           </p>
+          </div>
         </aside>
       </div>
-      <Modal open={previewOpen} onClose={() => setPreviewOpen(false)} title="Preview your listing">
-        {previewOpen && <ItemCard item={preview} preview />}
-        <div className="actions">
-          <Button variant="secondary" onClick={() => setPreviewOpen(false)}>
-            Close preview
-          </Button>
-        </div>
-      </Modal>
     </section>
+    <footer className="post-page__footer">{brand.name} | {brand.project}</footer>
+    </>
   );
 }

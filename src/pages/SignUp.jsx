@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
+import AuthLayout from '../components/layout/AuthLayout';
 import CommunityRulesModal from '../components/modals/CommunityRulesModal';
 import { useAuth } from '../context/AuthContext';
 import { resendConfirmation, signUp } from '../lib/auth';
@@ -23,6 +24,7 @@ export default function SignUp() {
   const [error, setError] = useState('');
   const [touched, setTouched] = useState({});
   const errorRef = useRef(null);
+  const titleRef = useRef(null);
   const fieldErrors = validateSignup(form);
   const fieldProps = (key) => ({
     id: `signup-${key}`,
@@ -34,6 +36,9 @@ export default function SignUp() {
   }, [error]);
   const [sent, setSent] = useState(false);
   const [notice, setNotice] = useState('');
+  useEffect(() => {
+    if (sent) titleRef.current?.focus();
+  }, [sent]);
   const draft = useUnsavedChanges(
     !sent &&
       Boolean(
@@ -86,8 +91,8 @@ export default function SignUp() {
     }
   }
   return (
-    <section className="auth-page page-section">
-      <h1>{sent ? 'Check your email' : 'Create your account'}</h1>
+    <AuthLayout>
+      <h1 ref={titleRef} tabIndex={sent ? -1 : undefined}>{sent ? 'Check your email' : 'Create your account'}</h1>
       {sent ? (
         <>
           <p>
@@ -103,10 +108,10 @@ export default function SignUp() {
         </>
       ) : (
         <>
-          <p>
+          <p className="auth-intro">
             Use your BulSU student email. You’ll add a profile photo after confirming your email.
           </p>
-          <form className="form-stack" onSubmit={submit} noValidate>
+          <form className="form-stack" onSubmit={submit} aria-busy={busy} noValidate>
             <Field
               label="Full name"
               {...fieldProps('name')}
@@ -183,8 +188,9 @@ export default function SignUp() {
               </span>
             </div>
             {touched.accepted && fieldErrors.accepted && (
-              <p id="rules-error" className="field__error">
-                {fieldErrors.accepted}
+              <p id="rules-error" role="alert" className="field__error">
+                <span className="field__error-icon" aria-hidden="true">!</span>
+                <span>{fieldErrors.accepted}</span>
               </p>
             )}
             {error && (
@@ -192,11 +198,11 @@ export default function SignUp() {
                 {error}
               </p>
             )}
-            <Button type="submit" disabled={busy || loading}>
+            <Button type="submit" size="large" disabled={busy || loading} busy={busy}>
               {busy ? 'Creating account…' : 'Create account'}
             </Button>
           </form>
-          <p>
+          <p className="auth-switch">
             Already have an account? <Link to="/login">Log in</Link>
           </p>
         </>
@@ -208,6 +214,6 @@ export default function SignUp() {
       )}
       {notice && <p role="status">{notice}</p>}
       <CommunityRulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
-    </section>
+    </AuthLayout>
   );
 }

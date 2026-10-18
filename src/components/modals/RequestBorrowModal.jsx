@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 import Button from '../ui/Button';
@@ -11,12 +11,15 @@ import { createRequest, getLatestItemRequest } from '../../lib/requests';
 import { canRequestAgain } from '../../lib/requestStates';
 import { formatDate, inclusiveDays, rangeError } from '../../lib/dates';
 import useUnsavedChanges from '../../hooks/useUnsavedChanges';
+import ItemPhoto from '../items/ItemPhoto';
 
 export default function RequestBorrowModal({ item, initialDates, onClose }) {
   const [dates, setDates] = useState(initialDates);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const formId = useId();
+  const helperId = useId();
   const availability = useAvailability(item.id);
   const today = useManilaToday();
   const navigate = useNavigate();
@@ -78,21 +81,36 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
     <Modal
       open
       title="Request to borrow"
+      size="form"
+      className="borrow-request-form"
       onClose={() => {
         draft.close(onClose);
       }}
+      footer={<>
+        <Button type="submit" form={formId} busy={busy}
+          disabled={availability.loading || Boolean(availability.error) || Boolean(validation)}>
+          {busy ? 'Sending…' : 'Send request'}
+        </Button>
+        <Button variant="secondary" disabled={busy} onClick={() => draft.close(onClose)}>Cancel</Button>
+      </>}
     >
+      <div className="transaction-summary">
+      <ItemPhoto path={item.item_photos?.[0]?.storage_path} alt={item.title} retryable={false} />
+      <div>
       <h3>{item.title}</h3>
       <p>
         Owner: {item.owner?.full_name || 'Listing owner'} ·{' '}
         {item.listing_type === 'rent' ? item.price_label : 'Free'}
       </p>
-      <form onSubmit={submit}>
+      </div>
+      </div>
+      <form id={formId} onSubmit={submit} aria-busy={busy}>
         <fieldset className="form-stack post-fields" disabled={busy}>
           <legend className="sr-only">Request details</legend>
-          <div className="form-columns">
+          <div className="form-columns borrow-request-form__dates">
             <Field
               label="From"
+              aria-describedby={helperId}
               type="date"
               required
               min={today}
@@ -101,6 +119,7 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
             />
             <Field
               label="To"
+              aria-describedby={helperId}
               type="date"
               required
               min={dates.start || today}
@@ -110,7 +129,7 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
               }
             />
           </div>
-          <p className="small">
+          <p className="small muted" id={helperId}>
             {dates.start && dates.end && !validation
               ? `${inclusiveDays(dates.start, dates.end)} days. `
               : ''}
@@ -152,26 +171,17 @@ export default function RequestBorrowModal({ item, initialDates, onClose }) {
               onChange={(event) => setMessage(event.target.value)}
             />
           </Field>
+          <div className="transaction-note">
           <p>
             Meetup: {item.meetup_note || 'Discuss a public meetup spot with the owner in person.'}
           </p>
           <p className="small muted">Payment, if any, is settled in person.</p>
+          </div>
           {error && (
             <p role="alert" className="field__error">
               {error}
             </p>
           )}
-          <div className="actions">
-            <Button variant="secondary" onClick={() => draft.close(onClose)}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={availability.loading || Boolean(availability.error) || Boolean(validation)}
-            >
-              {busy ? 'Sending…' : 'Send request'}
-            </Button>
-          </div>
         </fieldset>
       </form>
     </Modal>

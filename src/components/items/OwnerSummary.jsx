@@ -11,27 +11,29 @@ export default function OwnerSummary({ owner, showProfile = false, interactive =
   const [wall, setWall] = useState(false);
   if (!owner) return <p className="muted">Owner details unavailable.</p>;
   return (
-    <div className="owner-summary">
+    <div className={`owner-summary${showProfile ? ' owner-summary--profile' : ''}`}>
       <ProfilePhoto
         path={owner.photo_path}
         name={owner.full_name}
         size={showProfile ? 'md' : 'sm'}
       />
-      {interactive ? (
-        <button
-          type="button"
-          className={showProfile ? 'owner-summary__name' : 'owner-summary__link'}
-          aria-label={`View ${owner.full_name}'s profile`}
-          onClick={() => {
-            if (!isVerified) setWall(true);
-            else navigate(`/users/${owner.id}`);
-          }}
-        >
-          {owner.full_name}
-        </button>
-      ) : (
-        <span>{owner.full_name}</span>
-      )}
+      <div className="owner-summary__identity">
+        {interactive ? (
+          <button
+            type="button"
+            className={showProfile ? 'owner-summary__name' : 'owner-summary__link'}
+            aria-label={`View ${owner.full_name}'s profile`}
+            onClick={() => {
+              if (!isVerified) setWall(true);
+              else navigate(`/users/${owner.id}`);
+            }}
+          >
+            {owner.full_name}
+          </button>
+        ) : (
+          <span>{owner.full_name}</span>
+        )}
+      </div>
       <TrustBadge level={owner.trust_level} />
       <VerifiedOnlyModal
         open={wall}

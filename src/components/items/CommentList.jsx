@@ -6,22 +6,26 @@ import { formatTimestamp } from '../../lib/dates';
 import Button from '../ui/Button';
 import ProfilePhoto from '../ui/ProfilePhoto';
 import Field from '../ui/Field';
+import Chip from '../ui/Chip';
+import Skeleton from '../ui/Skeleton';
 import VerifiedOnlyModal from '../modals/VerifiedOnlyModal';
 import { useToast } from '../ui/Toast';
 import useUnsavedChanges from '../../hooks/useUnsavedChanges';
 
-export default function CommentList({ itemId }) {
-  const { isVerified, user } = useAuth();
+export default function CommentList({ itemId, ownerId }) {
+  const { isVerified, user, profile } = useAuth();
   return (
     <ListingComments
       key={`${itemId}:${user?.id || 'guest'}`}
       itemId={itemId}
+      ownerId={ownerId}
       isVerified={isVerified}
+      profile={profile}
     />
   );
 }
 
-function ListingComments({ itemId, isVerified }) {
+function ListingComments({ itemId, ownerId, isVerified, profile }) {
   const fetchPage = useCallback((offset) => getComments(itemId, offset), [itemId]);
   const list = usePagedResource(fetchPage);
   const [body, setBody] = useState('');
@@ -52,7 +56,7 @@ function ListingComments({ itemId, isVerified }) {
     }
   }
   return (
-    <section>
+    <section className="listing-comments">
       <div className="section-heading">
         <h2>Questions and comments</h2>
         <Button variant="secondary" disabled={list.loading || busy} onClick={list.refresh}>
@@ -67,41 +71,23 @@ function ListingComments({ itemId, isVerified }) {
           </Button>
         </div>
       )}
-      {!list.loading && !list.error && !list.entries.length && (
-        <p>No comments yet. Ask a question about this item.</p>
-      )}
-      <ul className="comment-list">
-        {list.entries.map((comment) => (
-          <li className="notice-card" key={comment.id}>
-            <div className="owner-summary">
-              <ProfilePhoto path={comment.author.photo_path} name={comment.author.full_name} />
-              <strong className="comment-author">{comment.author.full_name}</strong>
-            </div>
-            <p className="small muted">{formatTimestamp(comment.created_at)} (Manila)</p>
-            <p className="preserve-lines">{comment.body}</p>
-          </li>
-        ))}
-      </ul>
-      {list.loading && <p role="status">Loading comments…</p>}
-      {list.entries.length < list.total && (
-        <Button variant="secondary" disabled={list.loading} onClick={list.loadMore}>
-          Load more comments
-        </Button>
-      )}
-      {isVerified ? (
-        <form className="form-stack" onSubmit={submit}>
-          <Field label="Your comment" id="new-comment">
+      {isVerified && (
+        <form className="comment-compose" onSubmit={submit}>
+          <ProfilePhoto path={profile?.photo_path} name={profile?.full_name} size="sm" decorative />
+          <Field label="Your comment" id="new-comment" required>
             <textarea
               id="new-comment"
-              rows={3}
+              rows={1}
               maxLength={1500}
               required
+              placeholder="Ask the owner a question"
+              aria-describedby="comment-guidance"
               value={body}
               disabled={busy}
               onChange={(event) => setBody(event.target.value)}
             />
           </Field>
-          <p className="small muted">
+          <p className="small muted" id="comment-guidance">
             Keep questions relevant and respectful. Comments cannot be edited or deleted.
           </p>
           {error && (
@@ -109,13 +95,34 @@ function ListingComments({ itemId, isVerified }) {
               {error}
             </p>
           )}
-          <Button type="submit" disabled={busy || !body.trim()}>
-            {busy ? 'Posting…' : 'Post comment'}
+          <Button type="submit" busy={busy} disabled={!body.trim()}>
+            {busy ? 'Posting…' : 'Post'}
           </Button>
         </form>
-      ) : (
-        <Button onClick={() => setWall(true)}>Ask a question</Button>
       )}
+      {!list.loading && !list.error && !list.entries.length && (
+        <p>No comments yet. Ask a question about this item.</p>
+      )}
+      <ul className="comment-list">
+        {list.entries.map((comment) => (
+          <li className="comment" key={comment.id}>
+            <div className="owner-summary">
+              <ProfilePhoto path={comment.author.photo_path} name={comment.author.full_name} size="sm" />
+              <strong className="comment-author">{comment.author.full_name}</strong>
+              {ownerId && comment.author.id === ownerId && <Chip label="Owner" />}
+            </div>
+            <p className="small muted">{formatTimestamp(comment.created_at)} (Manila)</p>
+            <p className="preserve-lines">{comment.body}</p>
+          </li>
+        ))}
+      </ul>
+      {list.loading && <><Skeleton variant="text" lines={2} /><p className="sr-only" role="status">Loading comments…</p></>}
+      {list.entries.length < list.total && (
+        <Button variant="secondary" disabled={list.loading} onClick={list.loadMore}>
+          Load more comments
+        </Button>
+      )}
+      {!isVerified && <Button onClick={() => setWall(true)}>Ask a question</Button>}
       <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} returnTo={`/items/${itemId}`} />
     </section>
   );

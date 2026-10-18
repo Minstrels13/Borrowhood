@@ -25,21 +25,23 @@ export default function ItemCard({ item, preview = false, editable = false, onDe
       )}
       <div className="item-card__body">
         <h3>{preview ? title : <Link to={`/items/${item.id}`}>{title}</Link>}</h3>
-        <p className="small muted">
+        <p className="item-card__category">
           {item.category || 'Category'} ·{' '}
+          <span className={item.is_active === false ? 'item-card__unavailable' : item.available_now === false ? 'item-card__reserved' : 'item-card__available'}>
           {item.is_active === false
             ? 'Unavailable'
             : item.available_now === false
               ? 'Reserved today'
               : 'Available'}
+          </span>
         </p>
-        <p>
+        <p className="item-card__price">
           <strong>{item.listing_type === 'rent' ? 'For rent' : 'Free'}</strong>
           {item.listing_type === 'rent' && item.price_label && <> · {item.price_label}</>}
         </p>
         <OwnerSummary owner={item.owner} interactive={!preview} />
         {editable && (
-          <div>
+          <div className="item-card__management">
             <div className="actions">
               <Button to={`/items/${item.id}/requests`}>
                 View requests
