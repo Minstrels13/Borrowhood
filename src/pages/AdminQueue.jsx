@@ -93,7 +93,7 @@ export default function AdminQueue() {
         onChange={(e) => setSearch(e.target.value)}
       />
       <Tabs label="Verification status" tabs={tabs} value={status} onChange={setStatus}>
-        <div className="queue" aria-busy={loading}>
+        <div className="queue" aria-busy={loading} role="region" aria-label="Student verification list" tabIndex={0}>
           <div className="queue__head" aria-hidden="true">
             <span>Student</span>
             <span>BulSU email</span>
@@ -106,13 +106,13 @@ export default function AdminQueue() {
             <article className="queue__row" key={student.id}>
               <div className="queue__student">
                 <ProfilePhoto path={student.photo_path} name={student.full_name} />
-                <strong>{student.full_name}</strong>
+                <strong title={student.full_name}>{student.full_name}</strong>
               </div>
-              <p className="queue__email">
+              <p className="queue__email" title={student.email}>
                 <span className="sr-only">BulSU email: </span>
                 {student.email}
               </p>
-              <p>
+              <p title={student.course_year_section}>
                 <span className="sr-only">Course, year and section: </span>
                 {student.course_year_section}
               </p>

@@ -400,6 +400,12 @@
   --card-control-layer: 2;
 }
 
+/* Desktop verification rows keep identity and email on one line. */
+:root {
+  --queue-table-min-width: 1120px;
+  --queue-columns: minmax(0, 1.8fr) minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr);
+}
+
 /* G10 listing and transaction form presentation. */
 :root {
   --post-main-track: 1.5625fr;
