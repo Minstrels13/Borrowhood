@@ -7,6 +7,7 @@ export default function RouteEffects() {
   useEffect(() => {
     const names = {
       '/': 'Welcome',
+      ...(import.meta.env.DEV ? { '/__ui': 'Shared UI review' } : {}),
       '/signup': 'Sign up',
       '/login': 'Log in',
       '/pending': 'Verify your account',
@@ -29,6 +30,9 @@ export default function RouteEffects() {
               : pathname.startsWith('/items/')
                 ? 'Item details'
                 : 'Page not found');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute(
+      'content', getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim(),
+    );
     document.title = `${title} · ${brand.name}`;
     window.scrollTo({ top: 0 });
     document.getElementById('main')?.focus({ preventScroll: true });

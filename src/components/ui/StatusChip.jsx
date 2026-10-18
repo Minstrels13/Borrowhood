@@ -8,5 +8,14 @@ export const statuses = {
   cancelled: 'Cancelled',
 };
 export default function StatusChip({ status }) {
-  return <span className={`chip status--${status}`}>{statuses[status] || status}</span>;
+  return (
+    <span className={`chip status--${status}`}>
+      {status === 'overdue' && (
+        <span className="badge-warning" aria-hidden="true">
+          !
+        </span>
+      )}
+      {statuses[status] || status}
+    </span>
+  );
 }

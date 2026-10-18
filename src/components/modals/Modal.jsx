@@ -1,9 +1,20 @@
 import { useEffect, useId, useLayoutEffect, useRef } from 'react';
 import Icon from '../ui/Icon';
 
-export default function Modal({ open, onClose, title, children, className = '' }) {
+export default function Modal({
+  open,
+  onClose,
+  title,
+  description,
+  children,
+  footer,
+  size = 'default',
+  className = '',
+}) {
   const ref = useRef(null);
   const titleId = useId();
+  const descriptionId = useId();
+  const viewer = size === 'viewer' || className.split(' ').includes('photo-viewer');
   useEffect(() => {
     const dialog = ref.current;
     if (open && !dialog.open) dialog.showModal();
@@ -29,8 +40,9 @@ export default function Modal({ open, onClose, title, children, className = '' }
   return (
     <dialog
       ref={ref}
-      className={`modal ${className}`.trim()}
+      className={`modal modal--${size}${viewer ? ' modal--viewer' : ' modal--sheet'} ${className}`.trim()}
       aria-labelledby={titleId}
+      aria-describedby={description ? descriptionId : undefined}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
@@ -40,13 +52,18 @@ export default function Modal({ open, onClose, title, children, className = '' }
       }}
       onClick={outsideClick}
     >
+      {!viewer && <div className="modal__handle" aria-hidden="true" />}
       <header className="modal__header">
         <h2 id={titleId}>{title}</h2>
-        <button className="icon-button" aria-label="Close dialog" onClick={onClose}>
+        <button type="button" className="icon-button" aria-label="Close dialog" onClick={onClose}>
           <Icon name="close" />
         </button>
       </header>
-      <div className="modal__body">{children}</div>
+      <div className="modal__body">
+        {description && <p id={descriptionId}>{description}</p>}
+        {children}
+      </div>
+      {footer && <footer className="modal__footer">{footer}</footer>}
     </dialog>
   );
 }

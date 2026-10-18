@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { resendConfirmation, signIn, isStudentEmail } from '../lib/auth';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
+import AuthLayout from '../components/layout/AuthLayout';
 import { validateLogin } from '../lib/authValidation';
 
 export default function Login() {
@@ -78,16 +79,16 @@ export default function Login() {
     }
   }
   return (
-    <section className="auth-page page-section">
+    <AuthLayout>
       <h1>Welcome back</h1>
-      <p>Log in with your BulSU student email.</p>
+      <p className="auth-intro">Log in with your BulSU student email.</p>
       {confirmationExpired && (
         <p role="alert" className="notice-card">
           This email confirmation link is invalid or has expired. Enter your student email below to
           request a new link, or log in if you already confirmed your email.
         </p>
       )}
-      <form className="form-stack" onSubmit={submit} noValidate>
+      <form className="form-stack" onSubmit={submit} aria-busy={busy} noValidate>
         <Field
           label="BulSU email"
           id="login-email"
@@ -117,16 +118,16 @@ export default function Login() {
             setError('');
           }}
         />
-        <label className="checkbox-label">
-          <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} />
-          Show password
+        <label className="checkbox-label auth-checkbox">
+          <input type="checkbox" aria-controls="login-password" checked={visible} onChange={(e) => setVisible(e.target.checked)} />
+          <span>Show password</span>
         </label>
         {error && (
           <p ref={errorRef} tabIndex={-1} role="alert" className="auth-error">
             {error}
           </p>
         )}
-        <Button type="submit" disabled={busy || loading}>
+        <Button type="submit" size="large" disabled={busy || loading} busy={busy}>
           {busy ? 'Logging in…' : 'Log in'}
         </Button>
       </form>
@@ -142,9 +143,9 @@ export default function Login() {
         </Button>
       )}
       {notice && <p role="status">{notice}</p>}
-      <p>
+      <p className="auth-switch">
         New to Borrowhood? <Link to="/signup">Sign up</Link>
       </p>
-    </section>
+    </AuthLayout>
   );
 }
