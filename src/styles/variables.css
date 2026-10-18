@@ -334,3 +334,68 @@
     --verification-state-gap: 40px;
   }
 }
+
+/* G8 shelf and shared listing cards. */
+:root {
+  --text-shelf-heading: 1.5rem;
+  --text-shelf-heading-desktop: 2rem;
+  --shelf-toolbar-gap: var(--space-3);
+  --shelf-section-gap: var(--space-5);
+  --shelf-card-gap: var(--space-3);
+  --shelf-card-padding: var(--space-3);
+  --shelf-card-radius: var(--radius-panel);
+  --shelf-card-photo-ratio: 288 / 156;
+  --shelf-owner-avatar: 20px;
+  --item-placeholder-icon: 68px;
+  --shelf-owner-gap: var(--space-2);
+  --shelf-count-gap: var(--space-7);
+  --shelf-search-inset: 48px;
+  --shelf-sort-width: 288px;
+  --shelf-filters-button-width: 112px;
+  --shelf-grid-gap: var(--space-5);
+}
+@media (min-width: 768px) {
+  :root {
+    --shelf-toolbar-gap: var(--space-5);
+    --shelf-section-gap: var(--space-6);
+    --shelf-card-gap: var(--space-5);
+    --shelf-card-padding: var(--space-card);
+    --shelf-card-radius: var(--radius-card);
+  }
+}
+
+/* G9 item, calendar and eligibility presentation. */
+:root {
+  --detail-column-gap: 40px;
+  --detail-panel-width: 460px;
+  --detail-content-width: 700px;
+  --detail-main-track: 1.521739fr;
+  --detail-photo-mobile-ratio: 390 / 260;
+  --detail-photo-desktop-ratio: 700 / 320;
+  --detail-dot-size: 8px;
+  --detail-gallery-gap: var(--space-3);
+  --detail-panel-padding: var(--space-5);
+  --detail-fact-label-width: 100px;
+  --detail-legend-size: 14px;
+  --detail-calendar-gap: var(--space-1);
+  --detail-action-clearance: calc(var(--button-large) + var(--space-5) * 2);
+  --prompt-lock-size: 60px;
+  --prompt-lock-icon: 32px;
+  --prompt-body-gap: var(--space-5);
+  --prompt-body-padding: var(--space-5);
+  --prompt-action-min: 120px;
+  --viewer-footer-padding: var(--space-5);
+}
+
+:root {
+  --filter-toggle-width: 44px;
+  --filter-toggle-height: 24px;
+  --filter-toggle-thumb: 18px;
+  --filter-toggle-inset: 2px;
+  --filter-toggle-travel: 20px;
+}
+
+:root {
+  --card-link-layer: 1;
+  --card-control-layer: 2;
+}

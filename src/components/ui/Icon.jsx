@@ -9,6 +9,9 @@ const paths = {
   photo: 'M3 3h18v18H3zM3 17l5-5 4 4 3-3 6 6M15 8h.01',
   arrow: 'M14 6l-6 6 6 6',
   'chevron-down': 'M6 9l6 6 6-6',
+  search: 'M21 21l-6-6M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',
+  landscape: 'M2 20l8-11 5 7 3-4 5 8zM21 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0',
+  lock: 'M7 11V7a5 5 0 0 1 10 0v4M5 11h14v11H5z',
   trash: 'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',
 };
 export default function Icon({ name, label, className = '' }) {

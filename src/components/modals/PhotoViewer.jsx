@@ -36,8 +36,10 @@ export default function PhotoViewer({ photo, title, total, onClose, photos }) {
       open
       onClose={onClose}
       title={`Photo ${current.index + 1} of ${total}`}
+      size="viewer"
       className="photo-viewer"
     >
+      <p className="sr-only" role="status">Photo {current.index + 1} of {total}</p>
       <div
         className={`photo-viewer__viewport${actualSize ? ' photo-viewer__viewport--actual' : ''}`}
         tabIndex={actualSize && !failed ? 0 : undefined}

@@ -5,6 +5,9 @@ import useItem from '../hooks/useItem';
 import ItemPhoto from '../components/items/ItemPhoto';
 import OwnerSummary from '../components/items/OwnerSummary';
 import Button from '../components/ui/Button';
+import Chip from '../components/ui/Chip';
+import Skeleton from '../components/ui/Skeleton';
+import { brand } from '../config/brand';
 import VerifiedOnlyModal from '../components/modals/VerifiedOnlyModal';
 import PhotoViewer from '../components/modals/PhotoViewer';
 import RequestBorrowModal from '../components/modals/RequestBorrowModal';
@@ -32,9 +35,10 @@ export default function ItemDetail() {
   const navigate = useNavigate();
   if (loading)
     return (
-      <p className="container page-section" role="status">
-        Loading item…
-      </p>
+      <section className="container page-section item-detail item-detail--loading" aria-busy="true">
+        <p className="sr-only" role="status">Loading item…</p>
+        <div className="detail-loading-layout"><Skeleton variant="card" lines={3} /><Skeleton variant="text" lines={6} /></div>
+      </section>
     );
   if (error)
     return (
@@ -63,6 +67,7 @@ export default function ItemDetail() {
     else setRequestOpen(true);
   }
   const alreadyRequested = !canRequestAgain(existing.request);
+  const selectedIndex = Math.min(selected, Math.max(0, item.item_photos.length - 1));
   const requestButton = ownItem ? (
     <div className="actions detail-owner-actions">
       <Button to={`/items/${id}/requests`}>View requests</Button>
@@ -74,6 +79,7 @@ export default function ItemDetail() {
     <Button to={`/requests/${existing.request.id}`}>View your request</Button>
   ) : (
     <Button
+      size="large"
       onClick={openRequest}
       disabled={isVerified && (existing.loading || Boolean(existing.error))}
     >
@@ -81,24 +87,29 @@ export default function ItemDetail() {
     </Button>
   );
   return (
-    <section className="container page-section item-detail">
-      <p>
-        <Link to="/shelf">The Shelf</Link> / {item.title}
-      </p>
+    <>
+    <section className={`container page-section item-detail${isVerified ? ' item-detail--verified' : ''}`}>
+      <nav className="item-breadcrumb" aria-label="Breadcrumb">
+        <Link to="/shelf">The Shelf</Link><span aria-hidden="true">›</span><span aria-current="page">{item.title}</span>
+      </nav>
       <div className="detail-layout">
         <div className="detail-gallery">
+          <div className="detail-gallery__main">
           <ItemPhoto
-            path={item.item_photos[selected]?.storage_path || item.item_photos[0]?.storage_path}
+            loading="eager"
+            path={item.item_photos[selectedIndex]?.storage_path}
             alt={item.title}
-            onOpen={(url) => setExpandedPhoto({ url, index: selected })}
+            onOpen={(url) => setExpandedPhoto({ url, index: selectedIndex })}
           />
+          {item.item_photos.length > 0 && <span className="detail-photo-count">{selectedIndex + 1} / {item.item_photos.length}<span className="detail-photo-count__hint"> · Click to enlarge</span></span>}
+          </div>
           {item.item_photos.length > 1 && (
             <div className="photo-thumbnails" aria-label="Item photos">
               {item.item_photos.map((photo, index) => (
                 <Button
                   key={photo.id}
-                  variant={selected === index ? 'primary' : 'secondary'}
-                  aria-pressed={selected === index}
+                  variant={selectedIndex === index ? 'primary' : 'secondary'}
+                  aria-pressed={selectedIndex === index}
                   aria-label={`View photo ${index + 1}`}
                   onClick={() => setSelected(index)}
                 >
@@ -115,10 +126,10 @@ export default function ItemDetail() {
         <aside className="detail-summary notice-card">
           <div className="detail-identity">
             <h1>{item.title}</h1>
-            <p className="item-labels">
-              <span className="chip">{item.category}</span>
-              <span className="chip">{item.listing_type === 'rent' ? 'For rent' : 'Free'}</span>
-            </p>
+            <div className="item-labels">
+              <Chip label={item.category} />
+              <Chip label={item.listing_type === 'rent' ? 'For rent' : 'Free'} tone="info" />
+            </div>
             {item.listing_type === 'rent' && <p>{item.price_label}</p>}
             <OwnerSummary owner={item.owner} showProfile />
           </div>
@@ -128,7 +139,7 @@ export default function ItemDetail() {
               Up to {item.max_borrow_days} day{item.max_borrow_days === 1 ? '' : 's'} per borrow.
             </p>
             {availability.loading ? (
-              <p role="status">Loading availability…</p>
+              <><Skeleton variant="text" lines={6} /><p className="sr-only" role="status">Loading availability…</p></>
             ) : availability.error ? (
               <div role="alert">
                 <p>Unable to load availability.</p>
@@ -166,15 +177,13 @@ export default function ItemDetail() {
           <p className="preserve-lines">
             {item.description || 'No additional description provided.'}
           </p>
-          <h3>Condition</h3>
-          <p className="preserve-lines">{item.condition_note}</p>
-          <h3>Meetup</h3>
-          <p className="preserve-lines">
-            {item.meetup_note || 'Discuss a public meetup spot with the owner in person.'}
-          </p>
+          <dl className="detail-facts">
+            <div><dt>Condition</dt><dd className="preserve-lines">{item.condition_note}</dd></div>
+            <div><dt>Meetup</dt><dd className="preserve-lines">{item.meetup_note || 'Discuss a public meetup spot with the owner in person.'}</dd></div>
+          </dl>
         </div>
         <div className="detail-comments">
-          <CommentList key={id} itemId={id} />
+          <CommentList key={id} itemId={id} ownerId={item.owner_id} />
         </div>
       </div>
       <div className="detail-mobile-action">{requestButton}</div>
@@ -203,5 +212,7 @@ export default function ItemDetail() {
         />
       )}
     </section>
+    <footer className="item-detail-footer">{brand.name} | {brand.project}</footer>
+    </>
   );
 }

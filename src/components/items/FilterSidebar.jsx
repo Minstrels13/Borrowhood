@@ -1,7 +1,7 @@
 import { categories, emptyFilters } from '../../config/items';
 import Button from '../ui/Button';
 
-export default function FilterSidebar({ filters, onChange }) {
+export default function FilterSidebar({ filters, onChange, showClear = true }) {
   function toggle(group, value) {
     onChange({
       ...filters,
@@ -52,9 +52,9 @@ export default function FilterSidebar({ filters, onChange }) {
           Available now
         </label>
       </fieldset>
-      <Button variant="ghost" onClick={() => onChange(emptyFilters)}>
+      {showClear && <Button variant="ghost" onClick={() => onChange(emptyFilters)}>
         Clear filters
-      </Button>
+      </Button>}
     </div>
   );
 }
