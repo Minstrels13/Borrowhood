@@ -406,6 +406,42 @@
   --queue-columns: minmax(0, 1.8fr) minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr);
 }
 
+/* G12 compact account lists. */
+:root {
+  --account-row-photo: 56px;
+  --listing-main-min: 300px;
+  --listing-requests-min: 150px;
+  --listing-controls-min: 310px;
+  --activity-action-min: 112px;
+}
+
+/* G13 profile composition. */
+:root {
+  --profile-avatar-size: 88px;
+  --profile-desktop-ratio: 0.45fr;
+  --profile-layout-gap: 40px;
+  --profile-score-size: 48px;
+  --profile-counter-size: 28px;
+  --profile-progress-height: 10px;
+  --profile-verified-min: 188px;
+  --profile-score-min: 160px;
+  --profile-counters-min: 300px;
+}
+@media (min-width: 768px) {
+  :root {
+    --profile-avatar-size: 140px;
+    --profile-score-size: 56px;
+    --profile-counter-size: 32px;
+  }
+}
+
+/* G14 verification presentation; retain the reviewed single-line table tracks. */
+:root {
+  --admin-search-width: 400px;
+  --admin-info-size: 20px;
+  --admin-mobile-action-height: 48px;
+}
+
 /* G10 listing and transaction form presentation. */
 :root {
   --post-main-track: 1.5625fr;

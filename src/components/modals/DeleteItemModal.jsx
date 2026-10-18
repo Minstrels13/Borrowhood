@@ -31,10 +31,17 @@ export default function DeleteItemModal({ item, onClose, onDeleted }) {
     <Modal
       open
       title="Delete this listing?"
+      size="compact"
       onClose={() => {
         if (!busy) onClose();
       }}
       className="delete-listing-modal"
+      footer={<>
+        <Button variant="danger" busy={busy} onClick={remove}>
+          <Icon name="trash" />{busy ? 'Deleting…' : 'Delete listing'}
+        </Button>
+        <Button variant="secondary" autoFocus disabled={busy} onClick={onClose}>Cancel</Button>
+      </>}
     >
       <p>
         <strong>{item.title}</strong> will leave the Shelf and your listings. Existing request and
@@ -50,15 +57,6 @@ export default function DeleteItemModal({ item, onClose, onDeleted }) {
           {error}
         </p>
       )}
-      <div className="actions delete-listing-modal__actions" aria-busy={busy}>
-        <Button variant="secondary" autoFocus disabled={busy} onClick={onClose}>
-          Keep listing
-        </Button>
-        <Button variant="danger" disabled={busy} onClick={remove}>
-          <Icon name="trash" />
-          {busy ? 'Deleting…' : 'Delete listing'}
-        </Button>
-      </div>
     </Modal>
   );
 }

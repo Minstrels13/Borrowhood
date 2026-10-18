@@ -11,6 +11,7 @@ import StatusChip from '../components/ui/StatusChip';
 import { useToast } from '../components/ui/Toast';
 import RequestActionModal from '../components/modals/RequestActionModal';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
+import Skeleton from '../components/ui/Skeleton';
 
 export default function ItemRequests() {
   const { id } = useParams();
@@ -54,7 +55,7 @@ function OwnerRequests({ id, userId }) {
     return (
       <section className="container page-section">
         {list.loading ? (
-          <p role="status">Loading item requests…</p>
+          <><p role="status">Loading item requests…</p><Skeleton variant="text" lines={4} /></>
         ) : (
           <>
             <h1>Unable to load item requests</h1>
@@ -94,7 +95,7 @@ function OwnerRequests({ id, userId }) {
         Approving a request reserves its dates. Other pending requests that overlap those dates will
         automatically be declined. Requests for other dates stay pending.
       </p>
-      <div className="actions" role="group" aria-label="Filter requests">
+      <div className="actions item-requests__filters" role="group" aria-label="Filter requests">
         {[
           ['requested', 'Pending'],
           ['all', 'All requests'],
@@ -123,7 +124,7 @@ function OwnerRequests({ id, userId }) {
           Unable to refresh requests: {list.error}. Use Refresh requests to try again.
         </p>
       )}
-      {list.loading && <p role="status">Loading requests…</p>}
+      {list.loading && <><p role="status">Loading requests…</p><Skeleton variant="text" lines={3} /></>}
       {!list.loading && !list.error && !list.requests.length && (
         <div className="notice-card">
           <h2>{filter === 'requested' ? 'No pending requests' : 'No requests yet'}</h2>
@@ -142,7 +143,7 @@ function OwnerRequests({ id, userId }) {
         {list.requests.map((request) => {
           const duration = inclusiveDays(request.start_date, request.end_date);
           return (
-            <li className="item-request-card" key={request.id}>
+            <li className={`item-request-card${request.status === 'requested' ? ' item-request-card--attention' : ''}`} key={request.id}>
               <div className="item-request-card__heading">
                 <div className="owner-summary">
                   <ProfilePhoto
@@ -158,6 +159,7 @@ function OwnerRequests({ id, userId }) {
                 </div>
                 <StatusChip status={requestStatus(request, today)} />
               </div>
+              {request.status === 'requested' && <p className="item-request-card__attention">Needs your action</p>}
               <p>
                 <strong>
                   {formatDate(request.start_date)} – {formatDate(request.end_date)}

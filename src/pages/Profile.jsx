@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getStudentProfile, getProfileHistory } from '../lib/profiles';
-import { formatDate, formatTimestamp, manilaToday } from '../lib/dates';
+import { daysLate, formatDate, formatTimestamp, manilaToday } from '../lib/dates';
 import useItems from '../hooks/useItems';
 import usePagedResource from '../hooks/usePagedResource';
-import ItemCard from '../components/items/ItemCard';
+import ListingRow from '../components/items/ListingRow';
+import Chip from '../components/ui/Chip';
+import Skeleton from '../components/ui/Skeleton';
+import { brand } from '../config/brand';
+import { signOut } from '../lib/auth';
+import { useToast } from '../components/ui/Toast';
+import { useDraftNavigation } from '../context/DraftContext';
 import ProfilePhoto from '../components/ui/ProfilePhoto';
 import TrustBadge from '../components/ui/TrustBadge';
 import Button from '../components/ui/Button';
@@ -21,6 +27,9 @@ export default function Profile() {
 }
 
 function StudentProfile({ id, own }) {
+  const navigate = useNavigate();
+  const notify = useToast();
+  const confirmNavigation = useDraftNavigation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -46,11 +55,21 @@ function StudentProfile({ id, own }) {
       active = false;
     };
   }, [id, revision]);
+  function logout() {
+    confirmNavigation(async () => {
+      try {
+        await signOut();
+        navigate('/');
+      } catch (failure) {
+        notify(failure.message);
+      }
+    });
+  }
   if (!profile)
     return (
       <section className="container page-section">
         {loading ? (
-          <p role="status">Loading profile…</p>
+          <><p role="status">Loading profile…</p><div className="profile-loading"><Skeleton variant="avatar" /><Skeleton variant="text" lines={5} /></div></>
         ) : (
           <>
             <h1>Profile unavailable</h1>
@@ -69,14 +88,15 @@ function StudentProfile({ id, own }) {
     );
   const trust = profile.trust;
   return (
-    <section className="container page-section profile-layout">
+    <>
+    <section className="container page-section profile-layout profile-page">
       <aside className="notice-card profile-identity">
         <ProfilePhoto path={profile.photo_path} name={profile.full_name} size="lg" />
         <h1>{profile.full_name}</h1>
         <p>{profile.course_year_section}</p>
-        <span className="chip">Verified BulSU student</span>
+        <Chip label="Verified BulSU student" tone="info" />
         <p className="small muted">
-          Member since {formatDate(manilaToday(new Date(profile.created_at)))}
+          Member since {new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric', timeZone: 'Asia/Manila' }).format(new Date(profile.created_at))}
         </p>
         {own && (
           <Button variant="secondary" onClick={() => setEditing(true)}>
@@ -96,10 +116,12 @@ function StudentProfile({ id, own }) {
               Refresh profile
             </Button>
           </div>
+          <div className="trust-record__summary">
           <p>
             <strong className="trust-score">{trust.score}</strong> out of 100
           </p>
           <TrustBadge level={trust.level} />
+          </div>
           <dl className="trust-counters">
             {[
               ['On-time returns', trust.on_time],
@@ -120,6 +142,7 @@ function StudentProfile({ id, own }) {
           </p>
         </section>
         {error && <p role="alert">Unable to refresh profile: {error}</p>}
+        <div className="profile-sections">
         <Tabs
           label="Profile sections"
           tabs={[
@@ -135,6 +158,8 @@ function StudentProfile({ id, own }) {
             <ProfileListings key={`${id}:${revision}`} id={id} />
           )}
         </Tabs>
+        </div>
+        {own && <Button className="profile-logout" variant="secondary" onClick={logout}>Log out</Button>}
       </div>
       <EditProfileModal
         open={editing}
@@ -144,14 +169,16 @@ function StudentProfile({ id, own }) {
         }}
       />
     </section>
+    <footer className="account-page-footer">{brand.name} | {brand.project}</footer>
+    </>
   );
 }
 
 function ProfileListings({ id }) {
   const list = useItems({ ownerId: id });
   return (
-    <section>
-      <h2>Listings</h2>
+    <section className="profile-listings">
+      <h2 className="sr-only">Listings</h2>
       {list.error && (
         <div role="alert">
           <p>{list.error}</p>
@@ -159,12 +186,12 @@ function ProfileListings({ id }) {
         </div>
       )}
       {!list.loading && !list.error && !list.items.length && <p>No listings yet.</p>}
-      <div className="item-grid">
+      <div className="listing-rows">
         {list.items.map((item) => (
-          <ItemCard key={item.id} item={item} />
+          <ListingRow key={item.id} item={item} />
         ))}
       </div>
-      {list.loading && <p role="status">Loading listings…</p>}
+      {list.loading && <><p role="status">Loading listings…</p><Skeleton variant="text" lines={3} /></>}
       {list.items.length < list.total && (
         <Button variant="secondary" disabled={list.loading} onClick={list.loadMore}>
           Load more listings
@@ -178,8 +205,8 @@ function ProfileHistory({ id }) {
   const fetchPage = useCallback((offset) => getProfileHistory(id, offset), [id]);
   const list = usePagedResource(fetchPage);
   return (
-    <section>
-      <h2>Condition history</h2>
+    <section className="profile-history">
+      <h2 className="sr-only">Condition history</h2>
       <p className="muted">
         Completed borrows and loans. Only borrowing outcomes affect this student's trust record.
       </p>
@@ -192,16 +219,21 @@ function ProfileHistory({ id }) {
       {!list.loading && !list.error && !list.entries.length && <p>No completed activity yet.</p>}
       <ul className="history-list">
         {list.entries.map((entry, index) => (
-          <li className="notice-card" key={`${entry.returned_at}:${index}`}>
+          <li className="profile-history-row" key={`${entry.returned_at}:${index}`}>
+            <div className="profile-history-row__main">
             <h3>{entry.title}</h3>
             <p>
               {entry.role === 'borrowed' ? 'Borrowed from' : 'Lent to'} {entry.other_name} ·{' '}
               {formatDate(entry.start_date)} to {formatDate(entry.end_date)}
             </p>
-            <p>
-              {entry.late ? 'Returned late' : 'Returned on time'} · {conditions[entry.condition]}
-            </p>
             <p className="small muted">Returned {formatTimestamp(entry.returned_at)} (Manila)</p>
+            </div>
+            <div className="profile-history-row__outcome">
+              <span className={entry.late ? 'profile-history-row__late' : undefined}>
+                {entry.late ? `Returned ${daysLate(entry, manilaToday(new Date(entry.returned_at)))} ${daysLate(entry, manilaToday(new Date(entry.returned_at))) === 1 ? 'day' : 'days'} late` : 'Returned on time'}
+              </span>
+              <Chip label={conditions[entry.condition]} tone={entry.condition === 'damaged' ? 'danger' : entry.condition === 'minor_wear' ? 'clay' : 'info'} />
+            </div>
             {entry.request_id && (
               <Button variant="secondary" to={`/requests/${entry.request_id}`}>
                 View condition records
@@ -210,7 +242,7 @@ function ProfileHistory({ id }) {
           </li>
         ))}
       </ul>
-      {list.loading && <p role="status">Loading history…</p>}
+      {list.loading && <><p role="status">Loading history…</p><Skeleton variant="text" lines={4} /></>}
       {list.entries.length < list.total && (
         <Button variant="secondary" disabled={list.loading} onClick={list.loadMore}>
           Load more history
