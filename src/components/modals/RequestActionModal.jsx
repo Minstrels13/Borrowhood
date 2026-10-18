@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import Modal from './Modal';
 import Button from '../ui/Button';
 import Field from '../ui/Field';
 import { formatTimestamp } from '../../lib/dates';
 import { uploadConditionPhoto, removeConditionPhoto, transitionRequest } from '../../lib/requests';
 import useUnsavedChanges from '../../hooks/useUnsavedChanges';
+import PhotoUpload from '../ui/PhotoUpload';
+import ItemPhoto from '../items/ItemPhoto';
 
 const titles = {
   decline: 'Decline this request?',
@@ -23,6 +25,7 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
   const [preview, setPreview] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const formId = useId();
   const recordsCondition = action === 'handover' || action === 'return';
   const draft = useUnsavedChanges(Boolean(reason || notes || condition || confirmed || file), busy);
   useEffect(() => {
@@ -85,17 +88,27 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
     <Modal
       open
       title={titles[action]}
+      size={action === 'cancel' ? 'compact' : action === 'decline' ? 'prompt' : action === 'return' ? 'form' : 'default'}
+      className={`request-action-form request-action-form--${action}`}
       onClose={() => {
         draft.close(onClose);
       }}
+      footer={<>
+        <Button type="submit" form={formId} busy={busy}>
+          {busy ? 'Saving…' : action === 'cancel' ? 'Cancel request' : action === 'decline' ? 'Decline request' : titles[action]}
+        </Button>
+        <Button variant="secondary" disabled={busy} onClick={() => draft.close(onClose)}>
+          {action === 'cancel' ? 'Keep request' : action === 'decline' ? 'Back' : 'Cancel'}
+        </Button>
+      </>}
     >
       {action === 'handover' && (
-        <p>
+        <p className="transaction-note">
           Handing over {request.item.title} to {request.borrower.full_name}.
         </p>
       )}
       {action === 'return' && (
-        <div>
+        <div className="transaction-note">
           <h3>At handover ({formatTimestamp(request.handed_over_at)})</h3>
           <p className="preserve-lines">{request.handover_notes}</p>
         </div>
@@ -103,7 +116,7 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
       {action === 'cancel' && (
         <p>The owner can see the cancellation. Any reserved dates will open up again.</p>
       )}
-      <form onSubmit={submit}>
+      <form id={formId} onSubmit={submit} aria-busy={busy}>
         <fieldset className="form-stack post-fields" disabled={busy}>
           <legend className="sr-only">{titles[action]}</legend>
           {action === 'decline' && (
@@ -116,21 +129,16 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
             />
           )}
           {action === 'return' && (
-            <Field label="Condition now" id="return-condition">
-              <select
-                id="return-condition"
-                required
-                value={condition}
-                onChange={(event) => setCondition(event.target.value)}
-              >
-                <option value="">Choose condition</option>
+            <fieldset className="segmented-control segmented-control--three">
+              <legend>Condition now <span className="field__required">(required)</span></legend>
                 {Object.entries(conditions).map(([value, label]) => (
-                  <option value={value} key={value}>
+                  <label className="check-option" key={value}>
+                    <input type="radio" name="return-condition" required value={value}
+                      checked={condition === value} onChange={(event) => setCondition(event.target.value)} />
                     {label}
-                  </option>
+                  </label>
                 ))}
-              </select>
-            </Field>
+            </fieldset>
           )}
           <Field
             label={
@@ -156,21 +164,24 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
           )}
           {recordsCondition && (
             <>
-              <Field
+              <PhotoUpload
+                variant={action === 'return' ? 'button' : 'slots'}
                 label="Photo (optional)"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
+                limit={1}
+                count={file ? 1 : 0}
+                disabled={busy}
                 onChange={choosePhoto}
-                hint="One photo showing the condition. We resize it for you."
-              />
+                hint="One photo showing the condition. JPEG, PNG or WebP, smaller than 10 MB. We resize it for you."
+              >
               {preview && (
                 <div className="condition-photo-preview">
-                  <img src={preview} alt="Selected condition photo" />
+                  <ItemPhoto src={preview} alt="Selected condition photo" retryable={false} />
                   <Button variant="ghost" onClick={() => setFile(null)}>
                     Remove photo
                   </Button>
                 </div>
               )}
+              </PhotoUpload>
             </>
           )}
           {action === 'handover' && (
@@ -185,27 +196,13 @@ export default function RequestActionModal({ request, action, onClose, onSaved }
             </label>
           )}
           {action === 'return' && (
-            <p className="small muted">Damaged returns affect the borrower's trust record.</p>
+            <p className="transaction-note small"><span className="badge-warning" aria-hidden="true">! </span>Damaged returns affect the borrower's trust record.</p>
           )}
           {error && (
             <p role="alert" className="field__error">
               {error}
             </p>
           )}
-          <div className="actions">
-            <Button variant="secondary" onClick={() => draft.close(onClose)}>
-              {action === 'cancel' ? 'Keep request' : 'Cancel'}
-            </Button>
-            <Button type="submit">
-              {busy
-                ? 'Saving…'
-                : action === 'cancel'
-                  ? 'Cancel request'
-                  : action === 'decline'
-                    ? 'Decline request'
-                    : titles[action]}
-            </Button>
-          </div>
         </fieldset>
       </form>
     </Modal>

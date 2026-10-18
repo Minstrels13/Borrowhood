@@ -399,3 +399,44 @@
   --card-link-layer: 1;
   --card-control-layer: 2;
 }
+
+/* G10 listing and transaction form presentation. */
+:root {
+  --post-main-track: 1.5625fr;
+  --post-column-gap: 52px;
+  --post-form-gap: var(--space-5);
+  --post-description-height: 128px;
+  --post-preview-width: var(--shelf-card-width);
+  --photo-upload-slot: 90px;
+  --photo-upload-gap: var(--space-4);
+  --transaction-photo-size: 44px;
+  --transaction-textarea-height: 80px;
+  --transaction-form-gap: var(--space-4);
+  --transaction-photo-ratio: 1;
+}
+@media (min-width: 768px) {
+  :root {
+    --post-description-height: 80px;
+  }
+}
+
+/* G11 request detail, participants and condition records. */
+:root {
+  --request-layout-main: 1.521739fr;
+  --request-layout-gap: var(--space-4);
+  --request-desktop-gap: 40px;
+  --request-panel-padding: var(--space-4);
+  --request-summary-photo: 44px;
+  --request-step-size: 32px;
+  --request-step-dot: 12px;
+  --request-person-trust-min: 80px;
+  --condition-record-thumbnail: 96px;
+  --condition-record-pending-min: 96px;
+}
+@media (min-width: 768px) {
+  :root {
+    --request-panel-padding: var(--space-5);
+    --request-summary-photo: 56px;
+    --request-layout-gap: var(--space-4);
+  }
+}
