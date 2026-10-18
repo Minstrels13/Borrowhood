@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import Modal from './Modal';
 import Field from '../ui/Field';
 import Button from '../ui/Button';
 import { reviewStudent } from '../../lib/profiles';
 import useUnsavedChanges from '../../hooks/useUnsavedChanges';
+import ProfilePhoto from '../ui/ProfilePhoto';
 
 export default function RejectVerificationModal({ student, onClose, onReviewed }) {
   const [reason, setReason] = useState('');
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const formId = useId();
+  const noteId = useId();
   const draft = useUnsavedChanges(Boolean(student && (reason || note)), busy);
   useEffect(() => {
     setReason('');
@@ -37,14 +40,19 @@ export default function RejectVerificationModal({ student, onClose, onReviewed }
       onClose={() => {
         draft.close(onClose);
       }}
-      title="Reject verification"
+      title="Reject this student?"
+      size="reject"
+      className="reject-verification"
+      footer={<>
+        <Button type="submit" form={formId} busy={busy}>{busy ? 'Rejecting…' : 'Reject student'}</Button>
+        <Button variant="secondary" disabled={busy} onClick={() => draft.close(onClose)}>Cancel</Button>
+      </>}
     >
-      <p>
-        {student?.full_name}
-        <br />
-        {student?.email}
-      </p>
-      <form className="form-stack" onSubmit={submit}>
+      <div className="transaction-summary reject-verification__student">
+        <ProfilePhoto path={student?.photo_path} name={student?.full_name} />
+        <div><strong>{student?.full_name}</strong><p>{student?.email}</p></div>
+      </div>
+      <form id={formId} className="form-stack" onSubmit={submit} aria-busy={busy}>
         <fieldset className="form-stack post-fields" disabled={busy}>
           <legend className="sr-only">Verification rejection</legend>
           <Field
@@ -57,24 +65,16 @@ export default function RejectVerificationModal({ student, onClose, onReviewed }
           />
           <Field
             label="Admin note (optional)"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            maxLength={1000}
+            id={noteId}
             hint="Visible only to admins."
-          />
+          >
+            <textarea id={noteId} aria-describedby={`${noteId}-hint`} value={note} onChange={(e) => setNote(e.target.value)} maxLength={1000} rows={3} />
+          </Field>
           {error && (
             <p role="alert" className="field__error">
               {error}
             </p>
           )}
-          <div className="actions">
-            <Button variant="secondary" disabled={busy} onClick={() => draft.close(onClose)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={busy}>
-              {busy ? 'Rejecting…' : 'Reject student'}
-            </Button>
-          </div>
         </fieldset>
       </form>
     </Modal>

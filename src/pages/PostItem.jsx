@@ -11,7 +11,6 @@ import ItemPhoto from '../components/items/ItemPhoto';
 import { useToast } from '../components/ui/Toast';
 import PhotoUpload from '../components/ui/PhotoUpload';
 import Skeleton from '../components/ui/Skeleton';
-import { brand } from '../config/brand';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import { getStudentProfile } from '../lib/profiles';
 
@@ -346,7 +345,6 @@ export default function PostItem() {
         </aside>
       </div>
     </section>
-    <footer className="post-page__footer">{brand.name} | {brand.project}</footer>
     </>
   );
 }

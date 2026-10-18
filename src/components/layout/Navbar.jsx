@@ -105,6 +105,12 @@ export default function Navbar({ role: previewRole, context, activePath }) {
                 Back to shelf
               </Link>
             </>
+          ) : role === 'guest' && currentPath === '/' ? (
+            <>
+              <a className="navbar__link" href="#how-it-works">How it works</a>
+              <a className="navbar__link" href="#features">Features</a>
+              <a className="navbar__link" href="#faq">FAQ</a>
+            </>
           ) : (
             <>
               <Button variant="ghost" to="/shelf" aria-current={area === 'browse' ? 'page' : undefined}>

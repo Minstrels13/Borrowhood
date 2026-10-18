@@ -400,6 +400,48 @@
   --card-control-layer: 2;
 }
 
+/* Desktop verification rows keep identity and email on one line. */
+:root {
+  --queue-table-min-width: 1120px;
+  --queue-columns: minmax(0, 1.8fr) minmax(0, 2fr) minmax(0, 0.8fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr);
+}
+
+/* G12 compact account lists. */
+:root {
+  --account-row-photo: 56px;
+  --listing-main-min: 300px;
+  --listing-requests-min: 150px;
+  --listing-controls-min: 310px;
+  --activity-action-min: 112px;
+}
+
+/* G13 profile composition. */
+:root {
+  --profile-avatar-size: 88px;
+  --profile-desktop-ratio: 0.45fr;
+  --profile-layout-gap: 40px;
+  --profile-score-size: 48px;
+  --profile-counter-size: 28px;
+  --profile-progress-height: 10px;
+  --profile-verified-min: 188px;
+  --profile-score-min: 160px;
+  --profile-counters-min: 300px;
+}
+@media (min-width: 768px) {
+  :root {
+    --profile-avatar-size: 140px;
+    --profile-score-size: 56px;
+    --profile-counter-size: 32px;
+  }
+}
+
+/* G14 verification presentation; retain the reviewed single-line table tracks. */
+:root {
+  --admin-search-width: 400px;
+  --admin-info-size: 20px;
+  --admin-mobile-action-height: 48px;
+}
+
 /* G10 listing and transaction form presentation. */
 :root {
   --post-main-track: 1.5625fr;
@@ -438,5 +480,248 @@
     --request-panel-padding: var(--space-5);
     --request-summary-photo: 56px;
     --request-layout-gap: var(--space-4);
+  }
+}
+
+/* G4: S01 introduction and abstract decorative product geometry. */
+:root {
+  --landing-hero-padding: 20px;
+  --landing-hero-fluid-size: 4vw;
+  --landing-heading-tracking: -0.025em;
+  --landing-section-gap: 64px;
+  --landing-hero-gap: 40px;
+  --landing-hero-copy-width: 600px;
+  --landing-hero-description-width: 460px;
+  --landing-art-height: 390px;
+  --landing-art-width: 520px;
+  --landing-art-ratio: 358 / 390;
+  --landing-art-main-width: 60%;
+  --landing-art-main-height: 72%;
+  --landing-art-main-top: 8%;
+  --landing-art-main-left: 4%;
+  --landing-art-notice-width: 59%;
+  --landing-art-notice-height: 20%;
+  --landing-art-calendar-width: 43%;
+  --landing-art-calendar-height: 45%;
+  --landing-art-trust-width: 59%;
+  --landing-art-trust-height: 19%;
+  --landing-art-orb: 56px;
+  --landing-art-line: 8px;
+  --landing-art-line-short: 65%;
+  --landing-art-seal: 36px;
+  --landing-art-cell: 10px;
+  --landing-art-padding: 16px;
+  --landing-art-wash-height: 48%;
+  --landing-art-grid-gap: 6px;
+  --landing-art-grid-columns: 7;
+  --landing-art-shadow: var(--shadow-card);
+  --landing-eyebrow-tracking: 0.12em;
+  --landing-eyebrow-size: 11px;
+  --landing-step-number-size: 36px;
+  --landing-step-icon-size: 56px;
+  --landing-step-min-height: 184px;
+  --landing-steps-gap: 16px;
+  --landing-step-padding: 20px;
+  --landing-category-height: 44px;
+}
+@media (min-width: 768px) {
+  :root {
+    --landing-hero-padding: 48px;
+    --landing-section-gap: 88px;
+    --landing-art-ratio: 520 / 540;
+    --landing-art-height: 540px;
+    --landing-step-min-height: 250px;
+    --landing-step-padding: 28px;
+    --landing-steps-gap: 24px;
+  }
+}
+
+/* G5: public feature composition, bands, FAQ, footer and M13. */
+:root {
+  --landing-feature-gap: 16px;
+  --landing-feature-padding: 20px;
+  --landing-feature-height: 220px;
+  --landing-feature-lead-height: 300px;
+  --landing-feature-copy-min: 150px;
+  --landing-feature-art-min: 150px;
+  --landing-feature-art-height: 144px;
+  --landing-feature-trust-ring: 112px;
+  --landing-feature-ring-border: 8px;
+  --landing-faq-width: 960px;
+  --landing-faq-padding: 20px;
+  --landing-cta-radius: 28px;
+  --landing-cta-padding: 32px;
+  --landing-footer-brand-width: 340px;
+  --landing-accountability-copy-width: 420px;
+  --landing-accountability-bg: var(--color-primary);
+  --landing-accountability-panel: rgb(255 255 255 / 12%);
+  --landing-accountability-text: var(--color-on-primary);
+  --landing-accountability-soft: var(--brand-clay-tint);
+  --landing-cta-background: radial-gradient(circle 160px at 44px 40px, rgb(135 62 61 / 12%), transparent), linear-gradient(135deg, var(--brand-clay-tint), var(--brand-steel-tint));
+  --landing-hero-background: radial-gradient(circle 200px at calc(100% - 50px) 120px, rgb(135 62 61 / 14%), transparent), radial-gradient(circle 180px at 40px 520px, rgb(61 137 180 / 16%), transparent), linear-gradient(var(--brand-clay-tint), var(--color-bg));
+  --landing-background-size: 100% 700px;
+  --landing-art-tilt: -12deg;
+  --landing-footer-logo-height: 28px;
+  --landing-rules-gap: 16px;
+}
+@media (min-width: 768px) {
+  :root {
+    --landing-feature-gap: 24px;
+    --landing-feature-padding: 28px;
+    --landing-feature-height: 288px;
+    --landing-feature-lead-height: 288px;
+    --landing-feature-art-height: 224px;
+    --landing-cta-radius: 32px;
+    --landing-cta-padding: 48px;
+    --landing-hero-background: radial-gradient(circle 380px at calc(100% - 260px) 260px, rgb(135 62 61 / 14%), transparent), radial-gradient(circle 240px at 160px 520px, rgb(61 137 180 / 16%), transparent), radial-gradient(circle 260px at 53% 80px, rgb(188 153 134 / 22%), transparent), linear-gradient(var(--brand-clay-tint), var(--color-bg));
+    --landing-background-size: 100% 820px;
+    --landing-cta-background: radial-gradient(circle 200px at 80px 40px, rgb(135 62 61 / 12%), transparent), radial-gradient(circle 220px at calc(100% - 140px) 200px, rgb(61 137 180 / 20%), transparent), linear-gradient(135deg, var(--brand-clay-tint), var(--brand-steel-tint));
+  }
+}
+
+/* S01 illustration detail, with no real listing/profile/calendar data. */
+:root {
+  --landing-art-width: 358px;
+  --landing-art-ratio: 358 / 398;
+  --landing-art-panel-radius: 18px;
+  --landing-art-padding: 14px;
+  --landing-listing-width: 67.04%;
+  --landing-listing-height: 75.38%;
+  --landing-listing-left: 3.91%;
+  --landing-listing-top: 7.04%;
+  --landing-listing-image-height: 50%;
+  --landing-listing-padding: 16px;
+  --landing-approval-right: 2.79%;
+  --landing-approval-width: 59.78%;
+  --landing-approval-height: 17.59%;
+  --landing-approval-font: 12px;
+  --landing-profile-width: 59.78%;
+  --landing-profile-height: 20.1%;
+  --landing-hero-calendar-width: 47.66%;
+  --landing-hero-calendar-height: 38.87%;
+  --landing-hero-calendar-top: 55.09%;
+  --landing-title-bar-width: 78%;
+  --landing-title-bar-height: 12px;
+  --landing-name-bar-width: 96px;
+  --landing-name-bar-height: 6px;
+  --landing-avatar-size: 40px;
+  --landing-check-size: 32px;
+  --landing-check-icon: 20px;
+  --landing-available-width: 91px;
+  --landing-free-width: 54px;
+  --landing-calculator-width: 34%;
+  --landing-calculator-ratio: 102 / 148;
+  --landing-calculator-radius: 14px;
+  --landing-calculator-padding: 10px;
+  --landing-calculator-display-height: 20%;
+  --landing-calculator-key: 12px;
+  --landing-calendar-label-width: 42%;
+  --landing-calendar-font: 10px;
+  --landing-calendar-padding: 14px;
+  --landing-calendar-gap: 4px;
+  --landing-calendar-cell-height: 22px;
+  --landing-feature-padding: 16px;
+  --landing-feature-radius: 22px;
+  --landing-feature-heading: 18px;
+  --landing-feature-line-height: 1.57143;
+  --landing-calendar-tile-height: 330px;
+  --landing-condition-tile-height: 300px;
+  --landing-trust-tile-height: 250px;
+  --landing-comments-tile-height: 270px;
+  --landing-verified-tile-height: 240px;
+  --landing-calendar-art-height: 206px;
+  --landing-calendar-art-width: 252px;
+  --landing-record-height: 172px;
+  --landing-record-radius: 16px;
+  --landing-records-width: 284px;
+  --landing-record-photo-height: 44px;
+  --landing-note-bar-width: 90%;
+  --landing-note-bar-short: 65%;
+  --landing-feature-trust-ring: 110px;
+  --landing-feature-ring-border: 9px;
+  --landing-trust-ring-background: conic-gradient(from 12deg, var(--color-link) 0deg 330deg, var(--color-surface-alt) 330deg 360deg);
+  --landing-trust-copy-width: 160px;
+  --landing-question-width: 220px;
+  --landing-question-height: 52px;
+  --landing-reply-width: 244px;
+  --landing-reply-height: 64px;
+  --landing-comment-name-width: 42px;
+  --landing-email-width: 250px;
+  --landing-email-height: 40px;
+  --landing-email-font: 13px;
+  --landing-email-check: 18px;
+}
+@media (min-width: 768px) {
+  :root {
+    --landing-art-width: 470px;
+    --landing-art-ratio: 470 / 530;
+    --landing-art-top-gap: 8px;
+    --landing-hero-art-min: 530px;
+    --landing-art-padding: 16px;
+    --landing-listing-width: 63.83%;
+    --landing-listing-height: 70.19%;
+    --landing-listing-left: 6.38%;
+    --landing-listing-top: 7.92%;
+    --landing-listing-image-height: 51.08%;
+    --landing-approval-right: 0%;
+    --landing-approval-width: 53.19%;
+    --landing-approval-height: 14.34%;
+    --landing-approval-font: clamp(10px, 2.98cqw, 14px);
+    --landing-profile-width: 53.19%;
+    --landing-profile-height: 16.6%;
+    --landing-check-size: clamp(24px, 7.66cqw, 36px);
+    --landing-feature-padding: 32px;
+    --landing-feature-radius: 24px;
+    --landing-feature-heading: 20px;
+    --landing-calendar-tile-height: 290px;
+    --landing-condition-tile-height: 290px;
+    --landing-trust-tile-height: 300px;
+    --landing-comments-tile-height: 300px;
+    --landing-verified-tile-height: 300px;
+    --landing-calendar-art-height: 246px;
+    --landing-record-height: 222px;
+    --landing-record-photo-height: 60px;
+    --landing-email-width: 270px;
+  }
+}
+
+:root {
+  --landing-listing-padding: 12px;
+  --landing-avatar-strip-width: 232px;
+  --landing-lead-padding-block: 16px;
+}
+@media (min-width: 768px) {
+  :root {
+    --landing-listing-padding: 16px;
+    --landing-lead-padding-block: 21px;
+    --landing-lead-copy-offset: 10px;
+  }
+}
+
+:root {
+  --landing-hero-padding: 16px;
+  --landing-audience-padding: 6px;
+  --landing-audience-gap: 16px;
+  --landing-description-gap: 16px;
+}
+@media (min-width: 768px) {
+  :root {
+    --landing-hero-padding: 48px;
+    --landing-audience-padding: 8px;
+    --landing-audience-gap: 24px;
+    --landing-description-gap: 24px;
+  }
+}
+
+:root {
+  --landing-owner-badge-font: 12px;
+  --landing-owner-name-width: 96px;
+  --landing-profile-avatar: 40px;
+}
+@media (min-width: 768px) {
+  :root {
+    --landing-owner-badge-font: clamp(10px, 2.55cqw, 12px);
+    --landing-owner-name-width: clamp(64px, 20.43cqw, 96px);
+    --landing-profile-avatar: clamp(28px, 8.51cqw, 40px);
   }
 }

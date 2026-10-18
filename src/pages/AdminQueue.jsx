@@ -6,6 +6,10 @@ import Tabs from '../components/ui/Tabs';
 import ProfilePhoto from '../components/ui/ProfilePhoto';
 import RejectVerificationModal from '../components/modals/RejectVerificationModal';
 import { useToast } from '../components/ui/Toast';
+import Chip from '../components/ui/Chip';
+import Skeleton from '../components/ui/Skeleton';
+import { formatTimestamp } from '../lib/dates';
+import Icon from '../components/ui/Icon';
 
 const tabs = [
   { value: 'pending', label: 'Pending' },
@@ -67,7 +71,9 @@ export default function AdminQueue() {
     }
   }
   return (
-    <section className="container page-section">
+    <>
+    <section className="container page-section admin-page">
+      <header className="section-heading admin-page__heading">
       <h1>Verification queue</h1>
       <Button
         variant="secondary"
@@ -76,15 +82,24 @@ export default function AdminQueue() {
       >
         Refresh queue
       </Button>
-      <p>
+      </header>
+      <p className="admin-page__count">
         {loading && !rows.length
           ? 'Loading students…'
-          : `${total} ${status} student${total === 1 ? '' : 's'}`}
+          : error && !rows.length ? 'Unable to load student count.' : status === 'pending'
+            ? `${total} ${total === 1 ? 'student is' : 'students are'} waiting for review.`
+            : `${total} ${status} student${total === 1 ? '' : 's'}`}
       </p>
-      <p className="notice-card">
+      <div className="admin-guidance">
+      <span className="admin-guidance__icon" aria-hidden="true">i</span>
+      <p>
         Check the student email, submitted details and clear profile photo. Approval requires
         confirmed email, a photo, and a submitted application.
       </p>
+      </div>
+      <div className="admin-controls">
+      <div className="admin-search">
+      <Icon name="search" className="admin-search__icon" />
       <Field
         label="Search students"
         type="search"
@@ -92,8 +107,10 @@ export default function AdminQueue() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-      <Tabs label="Verification status" tabs={tabs} value={status} onChange={setStatus}>
-        <div className="queue" aria-busy={loading}>
+      </div>
+      <div className="admin-tabs">
+      <Tabs label="Verification status" tabs={tabs.map((tab) => ({ ...tab, label: tab.value === 'pending' && status === 'pending' && !loading && !error ? `Pending (${total})` : tab.label }))} value={status} onChange={setStatus}>
+        <div className="queue" aria-busy={loading} role="region" aria-label="Student verification list" tabIndex={0}>
           <div className="queue__head" aria-hidden="true">
             <span>Student</span>
             <span>BulSU email</span>
@@ -106,46 +123,38 @@ export default function AdminQueue() {
             <article className="queue__row" key={student.id}>
               <div className="queue__student">
                 <ProfilePhoto path={student.photo_path} name={student.full_name} />
-                <strong>{student.full_name}</strong>
+                <strong title={student.full_name}>{student.full_name}</strong>
               </div>
-              <p className="queue__email">
+              <p className="queue__email" title={student.email}>
                 <span className="sr-only">BulSU email: </span>
                 {student.email}
               </p>
-              <p>
+              <p className="queue__course" title={student.course_year_section}>
                 <span className="sr-only">Course, year and section: </span>
                 {student.course_year_section}
               </p>
-              <p>
+              <p className="queue__status">
                 <span className="sr-only">Email status: </span>
-                {student.email_confirmed ? 'Email confirmed' : 'Email not confirmed'}
+                <Chip label={student.email_confirmed ? 'Confirmed' : 'Not confirmed'} tone={student.email_confirmed ? 'info' : 'neutral'} />
                 {!student.photo_path && (
-                  <>
-                    <br />
-                    Photo missing
-                  </>
+                  <span className="queue__prerequisite">Photo missing</span>
                 )}
                 {student.photo_path && !student.submitted_at && (
-                  <>
-                    <br />
-                    Not submitted
-                  </>
+                  <span className="queue__prerequisite">Not submitted</span>
                 )}
               </p>
-              <p>
+              <p className="queue__requested" title={formatTimestamp(student.submitted_at || student.created_at)}>
                 <span className="sr-only">Requested: </span>
                 <span className="queue__mobile-label" aria-hidden="true">
                   Requested:{' '}
                 </span>
-                {new Intl.DateTimeFormat('en-PH', {
-                  dateStyle: 'medium',
-                  timeZone: 'Asia/Manila',
-                }).format(new Date(student.submitted_at || student.created_at))}
+                {formatTimestamp(student.submitted_at || student.created_at)}
               </p>
-              <div className="actions">
+              <div className="actions queue__actions">
                 {status === 'pending' ? (
                   <>
                     <Button
+                      aria-label={`Approve ${student.full_name}`}
                       disabled={
                         !student.email_confirmed ||
                         !student.photo_path ||
@@ -158,6 +167,7 @@ export default function AdminQueue() {
                       {busyId === student.id ? 'Approving…' : 'Approve'}
                     </Button>
                     <Button
+                      aria-label={`Reject ${student.full_name}`}
                       variant="secondary"
                       disabled={busyId !== null || loading}
                       onClick={() => setRejecting(student)}
@@ -171,9 +181,9 @@ export default function AdminQueue() {
               </div>
             </article>
           ))}
-          {loading && <p role="status">Loading students…</p>}
+          {loading && <><p role="status">Loading students…</p><Skeleton variant="text" lines={4} /></>}
           {!loading && !error && !rows.length && (
-            <p>
+            <p className="admin-empty">
               No {status} students{query ? ' match your search' : ' yet'}.
             </p>
           )}
@@ -192,6 +202,8 @@ export default function AdminQueue() {
           )}
         </div>
       </Tabs>
+      </div>
+      </div>
       <RejectVerificationModal
         student={rejecting}
         onClose={() => setRejecting(null)}
@@ -201,5 +213,6 @@ export default function AdminQueue() {
         }}
       />
     </section>
+    </>
   );
 }
