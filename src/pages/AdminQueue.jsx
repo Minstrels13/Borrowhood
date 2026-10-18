@@ -9,7 +9,6 @@ import { useToast } from '../components/ui/Toast';
 import Chip from '../components/ui/Chip';
 import Skeleton from '../components/ui/Skeleton';
 import { formatTimestamp } from '../lib/dates';
-import { brand } from '../config/brand';
 import Icon from '../components/ui/Icon';
 
 const tabs = [
@@ -214,7 +213,6 @@ export default function AdminQueue() {
         }}
       />
     </section>
-    <footer className="account-page-footer">{brand.name} | {brand.project}</footer>
     </>
   );
 }

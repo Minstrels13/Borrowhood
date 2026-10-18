@@ -16,7 +16,6 @@ import ItemPhoto from '../components/items/ItemPhoto';
 import ImagePlaceholder from '../components/ui/ImagePlaceholder';
 import Skeleton from '../components/ui/Skeleton';
 import { trustLevels } from '../components/ui/TrustBadge';
-import { brand } from '../config/brand';
 import StatusChip from '../components/ui/StatusChip';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
@@ -218,7 +217,6 @@ export default function RequestDetail() {
         />
       )}
     </section>
-    <footer className="request-detail__footer">{brand.name} | {brand.project}</footer>
     </>
   );
 }

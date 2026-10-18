@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext';
 import useItems from '../hooks/useItems';
 import ListingRow from '../components/items/ListingRow';
 import Skeleton from '../components/ui/Skeleton';
-import { brand } from '../config/brand';
 import Tabs from '../components/ui/Tabs';
 import Button from '../components/ui/Button';
 import RequestList from '../components/requests/RequestList';
@@ -65,7 +64,6 @@ export default function MyListings() {
         <DeleteItemModal item={deleting} onClose={() => setDeleting(null)} onDeleted={retry} />
       )}
     </section>
-    <footer className="account-page-footer">{brand.name} | {brand.project}</footer>
     </>
   );
 }

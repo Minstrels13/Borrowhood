@@ -9,7 +9,6 @@ import Modal from '../components/modals/Modal';
 import Chip from '../components/ui/Chip';
 import Skeleton from '../components/ui/Skeleton';
 import Icon from '../components/ui/Icon';
-import { brand } from '../config/brand';
 
 export default function Browse() {
   const { user, isVerified, isAdmin } = useAuth();
@@ -116,7 +115,6 @@ export default function Browse() {
         <FilterSidebar filters={filters} onChange={setFilters} showClear={false} />
       </Modal>
     </section>
-    <footer className="shelf-footer">{brand.name} | {brand.project}</footer>
     </>
   );
 }

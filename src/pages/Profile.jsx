@@ -8,7 +8,6 @@ import usePagedResource from '../hooks/usePagedResource';
 import ListingRow from '../components/items/ListingRow';
 import Chip from '../components/ui/Chip';
 import Skeleton from '../components/ui/Skeleton';
-import { brand } from '../config/brand';
 import { signOut } from '../lib/auth';
 import { useToast } from '../components/ui/Toast';
 import { useDraftNavigation } from '../context/DraftContext';
@@ -169,7 +168,6 @@ function StudentProfile({ id, own }) {
         }}
       />
     </section>
-    <footer className="account-page-footer">{brand.name} | {brand.project}</footer>
     </>
   );
 }

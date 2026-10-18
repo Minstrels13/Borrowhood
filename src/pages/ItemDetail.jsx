@@ -7,7 +7,6 @@ import OwnerSummary from '../components/items/OwnerSummary';
 import Button from '../components/ui/Button';
 import Chip from '../components/ui/Chip';
 import Skeleton from '../components/ui/Skeleton';
-import { brand } from '../config/brand';
 import VerifiedOnlyModal from '../components/modals/VerifiedOnlyModal';
 import PhotoViewer from '../components/modals/PhotoViewer';
 import RequestBorrowModal from '../components/modals/RequestBorrowModal';
@@ -212,7 +211,6 @@ export default function ItemDetail() {
         />
       )}
     </section>
-    <footer className="item-detail-footer">{brand.name} | {brand.project}</footer>
     </>
   );
 }
