@@ -16,6 +16,7 @@ import {
 } from '../../lib/profiles';
 import { useToast } from '../ui/Toast';
 import useUnsavedChanges from '../../hooks/useUnsavedChanges';
+import { profileChangeDetails } from '../../lib/profileChanges';
 
 export default function EditProfileModal({ open, onClose, resubmit = false, approvedProfile }) {
   const { user, profile: accountProfile, refresh } = useAuth();
@@ -32,6 +33,7 @@ export default function EditProfileModal({ open, onClose, resubmit = false, appr
   const needsReview = profile?.verification_status === 'approved';
   const identityLocked = needsReview && (review.loading || Boolean(review.error) || review.change?.status === 'pending');
   const identityChanged = needsReview && (name.trim() !== profile.full_name || Boolean(file));
+  const courseChanged = course.trim() !== (profile?.course_year_section || '');
   const formId = useId();
   useEffect(() => {
     if (!open || !needsReview) return;
@@ -68,7 +70,7 @@ export default function EditProfileModal({ open, onClose, resubmit = false, appr
   }, [open, profile]);
   async function submit(event) {
     event.preventDefault();
-    if (busy || (identityChanged && identityLocked)) return;
+    if (busy || (identityChanged && identityLocked) || (needsReview && !identityChanged && !courseChanged)) return;
     setError('');
     if (name.trim().length < 2 || course.trim().length < 2) {
       setError('Enter your full name and course, year and section.');
@@ -110,9 +112,10 @@ export default function EditProfileModal({ open, onClose, resubmit = false, appr
       className="profile-editor"
       footer={
         <>
-          <Button type="submit" form={formId} size="large" disabled={busy || (identityChanged && identityLocked)} busy={busy}>
-            {busy ? 'Saving…' : resubmit || identityChanged ? 'Submit for review' : 'Save changes'}
+          <Button type="submit" form={formId} size="large" disabled={busy || (needsReview && (!identityChanged || identityLocked))} busy={busy}>
+            {busy ? 'Saving…' : needsReview ? 'Request change' : resubmit ? 'Submit for review' : 'Save changes'}
           </Button>
+          {needsReview && <Button type="submit" form={formId} variant="secondary" size="large" disabled={busy || !courseChanged || identityChanged}>Save course</Button>}
           <Button variant="secondary" size="large" onClick={() => draft.close(onClose)} disabled={busy}>
             Cancel
           </Button>
@@ -120,9 +123,10 @@ export default function EditProfileModal({ open, onClose, resubmit = false, appr
       }
     >
       <form id={formId} className="form-stack" onSubmit={submit}>
-        {needsReview && <p className="small">Name and photo changes need admin approval. Your current approved details and borrowing access stay active. Course, year and section changes save immediately.</p>}
+        {needsReview && <p className="small">Only changed name/photo fields are reviewed. Your approved details and borrowing access stay active. Course, year and section save immediately; use Save course for course-only edits.</p>}
         {needsReview && review.loading && <p role="status">Checking profile change status…</p>}
-        {needsReview && review.change?.status === 'pending' && <p role="status">Your name or photo change is awaiting review. You can still edit your course, year and section.</p>}
+        {needsReview && review.change?.status === 'pending' && <p role="status">Pending review: {profileChangeDetails(review.change).pending}. You can still edit your course, year and section.</p>}
+        {needsReview && review.change?.status === 'rejected' && <p className="profile-change-rejection"><strong>Previous request rejected:</strong> {review.change.rejection_reason}</p>}
         {needsReview && review.error && <div role="alert"><p>{review.error}</p><Button variant="secondary" onClick={() => setReviewRevision((value) => value + 1)}>Retry review status</Button></div>}
         <ProfileEditorFields
           name={name}

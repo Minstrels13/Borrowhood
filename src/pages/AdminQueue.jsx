@@ -12,6 +12,8 @@ import { formatTimestamp } from '../lib/dates';
 import Icon from '../components/ui/Icon';
 import usePagedResource from '../hooks/usePagedResource';
 import ReviewProfileChangeModal from '../components/modals/ReviewProfileChangeModal';
+import ProfileChangeSummary from '../components/ui/ProfileChangeSummary';
+import { profileChangeDetails } from '../lib/profileChanges';
 
 const tabs = [
   { value: 'pending', label: 'Pending' },
@@ -20,20 +22,36 @@ const tabs = [
 ];
 export default function AdminQueue() {
   const [queue, setQueue] = useState('students');
+  const [pending, setPending] = useState({});
+  const [countRevision, setCountRevision] = useState(0);
+  const refreshCounts = useCallback(() => setCountRevision((value) => value + 1), []);
+  useEffect(() => {
+    let active = true;
+    Promise.allSettled([getVerificationQueue('pending', '', 0), getProfileChangeQueue('pending', '', 0)])
+      .then(([students, changes]) => {
+        if (!active) return;
+        setPending({
+          students: students.status === 'fulfilled' ? Number(students.value[0]?.total_count || 0) : undefined,
+          changes: changes.status === 'fulfilled' ? changes.value.total : undefined,
+        });
+      });
+    return () => { active = false; };
+  }, [countRevision]);
+  const countLabel = (label, count) => Number.isFinite(count) ? `${label} (${count})` : label;
   return (
     <section className="container page-section admin-page">
       <h1>Verification queue</h1>
       <Tabs label="Review queue" value={queue} onChange={setQueue} tabs={[
-        { value: 'students', label: 'Account verification' },
-        { value: 'changes', label: 'Profile changes' },
+        { value: 'students', label: countLabel('Account verification', pending.students) },
+        { value: 'changes', label: countLabel('Profile changes', pending.changes) },
       ]}>
-        {queue === 'students' ? <StudentVerificationQueue /> : <ProfileChangeQueue />}
+        {queue === 'students' ? <StudentVerificationQueue pendingCount={pending.students} onQueueChange={refreshCounts} /> : <ProfileChangeQueue pendingCount={pending.changes} onQueueChange={refreshCounts} />}
       </Tabs>
     </section>
   );
 }
 
-function StudentVerificationQueue() {
+function StudentVerificationQueue({ pendingCount, onQueueChange }) {
   const notify = useToast();
   const [status, setStatus] = useState('pending');
   const [search, setSearch] = useState('');
@@ -45,6 +63,7 @@ function StudentVerificationQueue() {
   const [rejecting, setRejecting] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [revision, setRevision] = useState(0);
+  const [statusTotals, setStatusTotals] = useState({});
   const generation = useRef(0);
   useEffect(() => {
     const timer = setTimeout(() => setQuery(search.trim()), 300);
@@ -59,6 +78,7 @@ function StudentVerificationQueue() {
       if (ticket !== generation.current) return;
       setRows((previous) => (append ? [...previous, ...data] : data));
       setTotal(Number(data[0]?.total_count || 0));
+      if (!query) setStatusTotals((previous) => ({ ...previous, [status]: Number(data[0]?.total_count || 0) }));
     } catch (err) {
       if (ticket === generation.current) setError(err.message);
     } finally {
@@ -73,7 +93,7 @@ function StudentVerificationQueue() {
       generation.current++;
     };
   }, [status, query, revision]);
-  const refresh = () => setRevision((value) => value + 1);
+  const refresh = () => { setRevision((value) => value + 1); onQueueChange(); };
   async function approve(student) {
     setBusyId(student.id);
     setError('');
@@ -126,7 +146,10 @@ function StudentVerificationQueue() {
       />
       </div>
       <div className="admin-tabs">
-      <Tabs label="Verification status" tabs={tabs.map((tab) => ({ ...tab, label: tab.value === 'pending' && status === 'pending' && !loading && !error ? `Pending (${total})` : tab.label }))} value={status} onChange={setStatus}>
+      <Tabs label="Verification status" tabs={tabs.map((tab) => {
+        const count = tab.value === status && !loading && !error ? total : tab.value === 'pending' ? pendingCount : statusTotals[tab.value];
+        return { ...tab, label: Number.isFinite(count) ? `${tab.label} (${count})` : tab.label };
+      })} value={status} onChange={setStatus}>
         <div className="queue" aria-busy={loading} role="region" aria-label="Student verification list" tabIndex={0}>
           <div className="queue__head" aria-hidden="true">
             <span>Student</span>
@@ -234,26 +257,46 @@ function StudentVerificationQueue() {
   );
 }
 
-function ProfileChangeQueue() {
+function ProfileChangeQueue({ pendingCount, onQueueChange }) {
   const notify = useToast();
   const [status, setStatus] = useState('pending');
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(null);
-  const heading = useRef(null);
-  const reviewed = useRef(false);
+  const refreshButton = useRef(null);
+  const rowButtons = useRef(new Map());
+  const [returnFocus, setReturnFocus] = useState(null);
+  const [statusTotals, setStatusTotals] = useState({});
   useEffect(() => {
     const timer = setTimeout(() => setQuery(search.trim()), 300);
     return () => clearTimeout(timer);
   }, [search]);
-  const fetchPage = useCallback((offset) => getProfileChangeQueue(status, query, offset), [status, query]);
+  const fetchPage = useCallback(async (offset) => {
+    const result = await getProfileChangeQueue(status, query, offset);
+    if (!query) setStatusTotals((previous) => ({ ...previous, [status]: result.total }));
+    return result;
+  }, [status, query]);
   const list = usePagedResource(fetchPage);
+  useEffect(() => {
+    if (!returnFocus || list.loading || selected) return;
+    const frame = requestAnimationFrame(() => {
+      const target = returnFocus.map((id) => rowButtons.current.get(id)).find(Boolean)
+        || Array.from(rowButtons.current.values())[0] || refreshButton.current;
+      target?.focus();
+      setReturnFocus(null);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [returnFocus, list.loading, selected]);
+  const refresh = () => { list.refresh(); onQueueChange(); };
   return (
     <div className="profile-change-queue">
-      <header className="section-heading"><h2 ref={heading} tabIndex={-1}>Profile changes</h2><Button variant="secondary" disabled={list.loading || Boolean(selected)} onClick={list.refresh}>Refresh changes</Button></header>
+      <div className="profile-change-toolbar"><Button ref={refreshButton} variant="secondary" disabled={list.loading || Boolean(selected)} onClick={refresh}>Refresh changes</Button></div>
       <p className="small">Review changes to approved names and photos. Students keep their current identity and borrowing access until approval. Course details do not need review.</p>
       <Field label="Search profile changes" type="search" placeholder="Search by name or email" value={search} onChange={(event) => setSearch(event.target.value)} />
-      <Tabs label="Profile change status" tabs={tabs} value={status} onChange={setStatus}>
+      <Tabs label="Profile change status" tabs={tabs.map((tab) => {
+        const count = tab.value === status && !list.loading && !list.error ? list.total : tab.value === 'pending' ? pendingCount : statusTotals[tab.value];
+        return { ...tab, label: Number.isFinite(count) ? `${tab.label} (${count})` : tab.label };
+      })} value={status} onChange={setStatus}>
         <div aria-busy={list.loading}>
           {!list.loading && !list.error && <p className="small" role="status">{list.total} {status} profile change{list.total === 1 ? '' : 's'}</p>}
           <ul className="profile-change-list">
@@ -261,28 +304,27 @@ function ProfileChangeQueue() {
               <ProfilePhoto path={change.previous_photo_path} name={change.previous_full_name} />
               <div className="profile-change-row__details"><h3>{change.previous_full_name}</h3><p>{change.email}</p><p className="small muted">Submitted {formatTimestamp(change.created_at)}</p></div>
               <div className="actions">
-                {change.full_name !== change.previous_full_name && <Chip label="Name change" tone="info" />}
-                {change.photo_path !== change.previous_photo_path && <Chip label="Photo change" tone="info" />}
-                <Button variant="secondary" disabled={list.loading} onClick={() => setSelected(change)} aria-label={`${status === 'pending' ? 'Review' : 'View'} profile changes for ${change.previous_full_name}`}>{status === 'pending' ? 'Review changes' : 'View details'}</Button>
+                {profileChangeDetails(change).name && <Chip label="Name change" tone="info" />}
+                {profileChangeDetails(change).photo && <Chip label="Photo change" tone="info" />}
+                <Button ref={(node) => { if (node) rowButtons.current.set(change.id, node); else rowButtons.current.delete(change.id); }} variant="secondary" disabled={list.loading} onClick={() => setSelected(change)} aria-label={`${status === 'pending' ? 'Review' : 'View'} profile changes for ${change.previous_full_name}`}>{status === 'pending' ? 'Review changes' : 'View details'}</Button>
               </div>
+              <ProfileChangeSummary change={change} compact showStatus={false} />
             </li>)}
           </ul>
           {list.loading && <><p role="status">Loading profile changes…</p><Skeleton variant="text" lines={4} /></>}
-          {list.error && <div role="alert"><p>{list.error}</p><Button variant="secondary" onClick={list.refresh}>Try again</Button></div>}
+          {list.error && <div role="alert"><p>{list.error}</p><Button variant="secondary" onClick={refresh}>Try again</Button></div>}
           {!list.loading && !list.error && !list.entries.length && <p>No {status} profile changes{query ? ' match your search' : ' yet'}.</p>}
           {list.entries.length < list.total && <Button variant="secondary" disabled={list.loading} onClick={list.loadMore}>Load more changes</Button>}
         </div>
       </Tabs>
       <ReviewProfileChangeModal change={selected} onClose={() => {
+        const index = list.entries.findIndex((entry) => entry.id === selected?.id);
+        setReturnFocus([selected?.id, list.entries[index + 1]?.id, list.entries[index - 1]?.id].filter(Boolean));
         setSelected(null);
-        if (reviewed.current) {
-          reviewed.current = false;
-          requestAnimationFrame(() => heading.current?.focus({ preventScroll: true }));
-        }
       }} onReviewed={(decision) => {
-        reviewed.current = true;
         notify(decision === 'approved' ? 'Profile changes approved.' : 'Profile changes rejected.');
-        list.refresh();
+        setStatusTotals({});
+        refresh();
       }} />
     </div>
   );

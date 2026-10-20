@@ -3,7 +3,7 @@ import Modal from './Modal';
 import Button from '../ui/Button';
 import { itemPhotoUrl } from '../../lib/items';
 
-export default function PhotoViewer({ photo, title, total, onClose, photos }) {
+export default function PhotoViewer({ photo, title, total, onClose, photos, resolvePhoto = itemPhotoUrl }) {
   const [current, setCurrent] = useState(photo);
   const [loading, setLoading] = useState(false);
   const generation = useRef(0);
@@ -22,7 +22,7 @@ export default function PhotoViewer({ photo, title, total, onClose, photos }) {
     setFailed(false);
     setActualSize(false);
     try {
-      const url = await itemPhotoUrl(photos[index].storage_path);
+      const url = await resolvePhoto(photos[index].storage_path);
       if (ticket === generation.current) setCurrent({ index, url });
     } catch {
       if (ticket === generation.current) setFailed(true);
@@ -63,7 +63,7 @@ export default function PhotoViewer({ photo, title, total, onClose, photos }) {
           <img
             className="photo-viewer__image"
             src={current.url}
-            alt={`Photo ${current.index + 1} of ${title}`}
+            alt={photos?.[current.index]?.alt || `Photo ${current.index + 1} of ${title}`}
             onError={() => setFailed(true)}
           />
         )}

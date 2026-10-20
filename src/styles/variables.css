@@ -424,6 +424,8 @@
   --profile-counter-size: 28px;
   --profile-progress-height: 10px;
   --profile-verified-min: 188px;
+  --profile-review-photo-size: 128px;
+  --profile-comparison-arrow-turn: -90deg;
   --profile-score-min: 160px;
   --profile-counters-min: 300px;
 }

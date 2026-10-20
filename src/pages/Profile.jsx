@@ -193,7 +193,7 @@ function OwnProfileChange({ id, revision }) {
       <h2>Profile changes</h2>
       {state.loading && <p role="status">Checking profile changes…</p>}
       {state.error && <div role="alert"><p>{state.error}</p><Button variant="secondary" onClick={() => setRetry((value) => value + 1)}>Retry review status</Button></div>}
-      {state.change && <ProfileChangeSummary change={state.change} />}
+      {state.change && <ProfileChangeSummary change={state.change} student />}
     </section>
   );
 }
