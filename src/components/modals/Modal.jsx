@@ -45,9 +45,11 @@ export default function Modal({
       aria-describedby={description ? descriptionId : undefined}
       onCancel={(event) => {
         event.preventDefault();
+        event.stopPropagation();
         onClose();
       }}
-      onClose={() => {
+      onClose={(event) => {
+        event.stopPropagation();
         if (open && !ref.current?.open) onClose();
       }}
       onClick={outsideClick}
