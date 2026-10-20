@@ -109,7 +109,7 @@ export default function Landing() {
         <div className="container">
           <div className="landing-footer__main">
             <div className="landing-footer__brand"><Link to="/" className="brand-link" aria-label={`${brand.name} home`}><Logo decorative /></Link><p>A campus shelf for BulSU students to lend, rent, and borrow school items.</p></div>
-            <nav aria-label="Product"><h3>Product</h3><Link to="/shelf">Browse the shelf</Link><a href="#how-it-works">How it works</a><a className="landing-footer__desktop" href="#features">Features</a></nav>
+            <nav aria-label="Product"><h3>Product</h3><Link to="/shelf">Browse the shelf</Link><a href="#how-it-works">How it works</a><a href="#features">Features</a><a href="#faq">FAQ</a></nav>
             <nav aria-label="Account and community"><h3>Account</h3><Link to="/login">Log in</Link><Link className="landing-footer__desktop" to="/signup">Sign up</Link><button type="button" onClick={() => setRulesOpen(true)}>Community rules</button></nav>
           </div>
         </div>

@@ -62,11 +62,23 @@ assert.deepEqual(requestState(request, false, '2026-10-21').actions, []);
 assert.match(requestState({ ...request, status: 'declined' }, false, today).text, /Unavailable/);
 assert.equal(requestStatus({ ...request, status: 'approved' }, '2026-10-21'), 'approved');
 assert.equal(canRequestAgain(null), true);
-for (const status of ['requested', 'approved', 'handed_over', 'overdue', 'returned']) {
+for (const status of ['requested', 'approved', 'handed_over', 'overdue', 'unknown']) {
   assert.equal(canRequestAgain({ status }), false);
 }
-assert.equal(canRequestAgain({ status: 'declined' }), true);
-assert.equal(canRequestAgain({ status: 'cancelled' }), true);
+for (const status of ['declined', 'cancelled', 'returned']) {
+  assert.equal(canRequestAgain({ status }), true);
+}
+// A completed loan allows a new request without reopening its history.
+const completedRequest = Object.freeze({
+  ...request,
+  status: 'returned',
+  returned_at: '2026-10-20T08:00:00Z',
+});
+assert.equal(canRequestAgain(completedRequest), true);
+assert.equal(completedRequest.status, 'returned');
+assert.deepEqual(requestState(completedRequest, false, today).actions, []);
+// Once the next request exists, it blocks another submission again.
+assert.equal(canRequestAgain({ ...completedRequest, status: 'requested' }), false);
 assert.match(
   requestState(
     { ...request, status: 'declined', decline_reason: 'Listing removed by owner.' },
@@ -76,5 +88,5 @@ assert.match(
   /Listing removed by owner\./,
 );
 console.log(
-  'Request date/state checks passed: inclusive days, leap dates, Manila midnight, overlaps, late returns and both-role action matrix.',
+  'Request date/state checks passed: inclusive days, leap dates, Manila midnight, overlaps, late returns, repeat-request eligibility and both-role action matrix.',
 );

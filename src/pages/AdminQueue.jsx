@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { getVerificationQueue, reviewStudent } from '../lib/profiles';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { getVerificationQueue, reviewStudent, getProfileChangeQueue } from '../lib/profiles';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
 import Tabs from '../components/ui/Tabs';
@@ -10,6 +10,8 @@ import Chip from '../components/ui/Chip';
 import Skeleton from '../components/ui/Skeleton';
 import { formatTimestamp } from '../lib/dates';
 import Icon from '../components/ui/Icon';
+import usePagedResource from '../hooks/usePagedResource';
+import ReviewProfileChangeModal from '../components/modals/ReviewProfileChangeModal';
 
 const tabs = [
   { value: 'pending', label: 'Pending' },
@@ -17,6 +19,21 @@ const tabs = [
   { value: 'rejected', label: 'Rejected' },
 ];
 export default function AdminQueue() {
+  const [queue, setQueue] = useState('students');
+  return (
+    <section className="container page-section admin-page">
+      <h1>Verification queue</h1>
+      <Tabs label="Review queue" value={queue} onChange={setQueue} tabs={[
+        { value: 'students', label: 'Account verification' },
+        { value: 'changes', label: 'Profile changes' },
+      ]}>
+        {queue === 'students' ? <StudentVerificationQueue /> : <ProfileChangeQueue />}
+      </Tabs>
+    </section>
+  );
+}
+
+function StudentVerificationQueue() {
   const notify = useToast();
   const [status, setStatus] = useState('pending');
   const [search, setSearch] = useState('');
@@ -72,9 +89,9 @@ export default function AdminQueue() {
   }
   return (
     <>
-    <section className="container page-section admin-page">
+    <div className="admin-page">
       <header className="section-heading admin-page__heading">
-      <h1>Verification queue</h1>
+      <h2>Account verification</h2>
       <Button
         variant="secondary"
         disabled={loading || busyId !== null || Boolean(rejecting)}
@@ -137,10 +154,10 @@ export default function AdminQueue() {
                 <span className="sr-only">Email status: </span>
                 <Chip label={student.email_confirmed ? 'Confirmed' : 'Not confirmed'} tone={student.email_confirmed ? 'info' : 'neutral'} />
                 {!student.photo_path && (
-                  <span className="queue__prerequisite">Photo missing</span>
+                  <Chip label="Photo missing" tone="danger" />
                 )}
                 {student.photo_path && !student.submitted_at && (
-                  <span className="queue__prerequisite">Not submitted</span>
+                  <Chip label="Not submitted" tone="clay" />
                 )}
               </p>
               <p className="queue__requested" title={formatTimestamp(student.submitted_at || student.created_at)}>
@@ -212,7 +229,61 @@ export default function AdminQueue() {
           refresh();
         }}
       />
-    </section>
+    </div>
     </>
+  );
+}
+
+function ProfileChangeQueue() {
+  const notify = useToast();
+  const [status, setStatus] = useState('pending');
+  const [search, setSearch] = useState('');
+  const [query, setQuery] = useState('');
+  const [selected, setSelected] = useState(null);
+  const heading = useRef(null);
+  const reviewed = useRef(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+  const fetchPage = useCallback((offset) => getProfileChangeQueue(status, query, offset), [status, query]);
+  const list = usePagedResource(fetchPage);
+  return (
+    <div className="profile-change-queue">
+      <header className="section-heading"><h2 ref={heading} tabIndex={-1}>Profile changes</h2><Button variant="secondary" disabled={list.loading || Boolean(selected)} onClick={list.refresh}>Refresh changes</Button></header>
+      <p className="small">Review changes to approved names and photos. Students keep their current identity and borrowing access until approval. Course details do not need review.</p>
+      <Field label="Search profile changes" type="search" placeholder="Search by name or email" value={search} onChange={(event) => setSearch(event.target.value)} />
+      <Tabs label="Profile change status" tabs={tabs} value={status} onChange={setStatus}>
+        <div aria-busy={list.loading}>
+          {!list.loading && !list.error && <p className="small" role="status">{list.total} {status} profile change{list.total === 1 ? '' : 's'}</p>}
+          <ul className="profile-change-list">
+            {list.entries.map((change) => <li key={change.id} className="notice-card profile-change-row">
+              <ProfilePhoto path={change.previous_photo_path} name={change.previous_full_name} />
+              <div className="profile-change-row__details"><h3>{change.previous_full_name}</h3><p>{change.email}</p><p className="small muted">Submitted {formatTimestamp(change.created_at)}</p></div>
+              <div className="actions">
+                {change.full_name !== change.previous_full_name && <Chip label="Name change" tone="info" />}
+                {change.photo_path !== change.previous_photo_path && <Chip label="Photo change" tone="info" />}
+                <Button variant="secondary" disabled={list.loading} onClick={() => setSelected(change)} aria-label={`${status === 'pending' ? 'Review' : 'View'} profile changes for ${change.previous_full_name}`}>{status === 'pending' ? 'Review changes' : 'View details'}</Button>
+              </div>
+            </li>)}
+          </ul>
+          {list.loading && <><p role="status">Loading profile changes…</p><Skeleton variant="text" lines={4} /></>}
+          {list.error && <div role="alert"><p>{list.error}</p><Button variant="secondary" onClick={list.refresh}>Try again</Button></div>}
+          {!list.loading && !list.error && !list.entries.length && <p>No {status} profile changes{query ? ' match your search' : ' yet'}.</p>}
+          {list.entries.length < list.total && <Button variant="secondary" disabled={list.loading} onClick={list.loadMore}>Load more changes</Button>}
+        </div>
+      </Tabs>
+      <ReviewProfileChangeModal change={selected} onClose={() => {
+        setSelected(null);
+        if (reviewed.current) {
+          reviewed.current = false;
+          requestAnimationFrame(() => heading.current?.focus({ preventScroll: true }));
+        }
+      }} onReviewed={(decision) => {
+        reviewed.current = true;
+        notify(decision === 'approved' ? 'Profile changes approved.' : 'Profile changes rejected.');
+        list.refresh();
+      }} />
+    </div>
   );
 }

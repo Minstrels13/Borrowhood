@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getStudentProfile, getProfileHistory } from '../lib/profiles';
+import { getStudentProfile, getProfileHistory, getLatestProfileChange } from '../lib/profiles';
 import { daysLate, formatDate, formatTimestamp, manilaToday } from '../lib/dates';
 import useItems from '../hooks/useItems';
 import usePagedResource from '../hooks/usePagedResource';
@@ -17,6 +17,7 @@ import Button from '../components/ui/Button';
 import Tabs from '../components/ui/Tabs';
 import EditProfileModal from '../components/modals/EditProfileModal';
 import { conditions } from '../components/modals/RequestActionModal';
+import ProfileChangeSummary from '../components/ui/ProfileChangeSummary';
 
 export default function Profile() {
   const { id } = useParams();
@@ -26,6 +27,7 @@ export default function Profile() {
 }
 
 function StudentProfile({ id, own }) {
+  const { refresh: refreshAccount } = useAuth();
   const navigate = useNavigate();
   const notify = useToast();
   const confirmNavigation = useDraftNavigation();
@@ -104,13 +106,14 @@ function StudentProfile({ id, own }) {
         )}
       </aside>
       <div className="profile-content">
+        {own && <OwnProfileChange id={id} revision={revision} />}
         <section className="notice-card trust-record">
           <div className="section-heading">
             <h2>Trust record</h2>
             <Button
               variant="secondary"
               disabled={loading || editing}
-              onClick={() => setRevision((value) => value + 1)}
+              onClick={() => own ? refreshAccount() : setRevision((value) => value + 1)}
             >
               Refresh profile
             </Button>
@@ -162,6 +165,7 @@ function StudentProfile({ id, own }) {
       </div>
       <EditProfileModal
         open={editing}
+        approvedProfile={profile}
         onClose={() => {
           setEditing(false);
           setRevision((value) => value + 1);
@@ -169,6 +173,28 @@ function StudentProfile({ id, own }) {
       />
     </section>
     </>
+  );
+}
+
+function OwnProfileChange({ id, revision }) {
+  const [state, setState] = useState({ loading: true, change: null, error: '' });
+  const [retry, setRetry] = useState(0);
+  useEffect(() => {
+    let active = true;
+    setState((previous) => ({ ...previous, loading: true, error: '' }));
+    getLatestProfileChange(id)
+      .then((change) => { if (active) setState({ loading: false, change, error: '' }); })
+      .catch((failure) => { if (active) setState((previous) => ({ ...previous, loading: false, error: failure.message })); });
+    return () => { active = false; };
+  }, [id, revision, retry]);
+  if (!state.loading && !state.error && !state.change) return null;
+  return (
+    <section className="notice-card profile-change-status" aria-label="Your profile change review" aria-busy={state.loading}>
+      <h2>Profile changes</h2>
+      {state.loading && <p role="status">Checking profile changes…</p>}
+      {state.error && <div role="alert"><p>{state.error}</p><Button variant="secondary" onClick={() => setRetry((value) => value + 1)}>Retry review status</Button></div>}
+      {state.change && <ProfileChangeSummary change={state.change} />}
+    </section>
   );
 }
 

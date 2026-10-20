@@ -4,7 +4,7 @@ import Field from '../ui/Field';
 // A pure form view: the owning dialog keeps validation, uploads and save actions.
 export default function ProfileEditorFields({
   name, course, email, file, hasPhoto, photo, busy, error,
-  onNameChange, onCourseChange, onFileChange,
+  onNameChange, onCourseChange, onFileChange, identityLocked = false, needsReview = false,
 }) {
   const photoId = useId();
   const photoHintId = useId();
@@ -21,9 +21,10 @@ export default function ProfileEditorFields({
             accept="image/jpeg,image/png,image/webp"
             onChange={onFileChange}
             required={!hasPhoto}
+            disabled={identityLocked}
             aria-describedby={photoHintId}
           />
-          <label htmlFor={photoId} className="button button--secondary">
+          <label htmlFor={photoId} className="button button--secondary" aria-disabled={identityLocked || undefined}>
             {hasPhoto ? 'Change photo' : 'Add photo'}
           </label>
           {file && <span className="small">{file.name}</span>}
@@ -31,6 +32,7 @@ export default function ProfileEditorFields({
       </div>
       <p id={photoHintId} className="field__hint profile-editor__hint">
         Required. You can replace your photo but not remove it. JPEG, PNG or WebP, up to 10 MB.
+        {needsReview && ' A replacement photo needs admin approval.'}
       </p>
       <Field
         label="Full name"
@@ -39,6 +41,8 @@ export default function ProfileEditorFields({
         minLength={2}
         maxLength={100}
         required
+        readOnly={identityLocked}
+        hint={needsReview ? 'Name changes need admin approval. Your approved name stays visible until then.' : undefined}
       />
       <Field
         label="Course, year and section"

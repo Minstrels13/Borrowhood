@@ -40,6 +40,27 @@ export const reviewStudent = (id, decision, reason, note) =>
   });
 export const getVerificationQueue = (status, search, offset) =>
   rpc('verification_queue', { p_status: status, p_search: search, p_offset: offset });
+export async function getLatestProfileChange(id) {
+  const { data, error } = await requireSupabase()
+    .from('profile_change_requests')
+    .select('id,student_id,previous_full_name,previous_photo_path,full_name,photo_path,status,created_at,reviewed_at,rejection_reason')
+    .eq('student_id', id)
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw serviceError(error, 'Profile change reviews');
+  return data;
+}
+export const submitProfileChange = (name, course, photoPath, previous) =>
+  rpc('submit_profile_change', {
+    p_full_name: name, p_course: course, p_photo_path: photoPath,
+    p_expected_name: previous.full_name, p_expected_photo: previous.photo_path,
+  });
+export const getProfileChangeQueue = (status, search, offset = 0) =>
+  rpc('profile_change_queue', { p_status: status, p_search: search, p_offset: offset });
+export const reviewProfileChange = (id, decision, reason) =>
+  rpc('review_profile_change', { p_id: id, p_decision: decision, p_reason: reason || null });
 export const getStudentProfile = (id) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
     ? rpc('student_profile', { p_user: id })
