@@ -8,10 +8,10 @@ import { navigationArea } from '../../config/navigation';
 export default function TabBar({ preview = false, activePath }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { user, isVerified } = useAuth();
+  const { user, isVerified, isAdmin } = useAuth();
   const [wall, setWall] = useState(false);
   const area = navigationArea(activePath || pathname);
-  if (!preview && !isVerified) return null;
+  if (!preview && (!isVerified || isAdmin)) return null;
   function open(icon) {
     if (icon === 'browse') navigate('/shelf');
     else if (!isVerified) {

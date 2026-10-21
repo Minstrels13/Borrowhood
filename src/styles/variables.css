@@ -440,6 +440,17 @@
 /* G14 verification presentation; retain the reviewed single-line table tracks. */
 :root {
   --admin-search-width: 400px;
+  --report-status-column: calc(var(--space-6) * 3);
+  --report-action-column: var(--activity-action-min);
+  --report-queue-columns: minmax(0, 1.45fr) minmax(0, 1.65fr) minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.35fr) var(--report-status-column) var(--report-action-column);
+  --report-queue-card-columns: minmax(0, 1fr) max-content;
+  --report-count-size: 0.8125rem;
+  --report-refresh-width: calc(var(--space-6) * 6);
+  --report-status-size: var(--text-xs);
+  --report-resolved-text: var(--color-text-muted);
+  --report-resolved-fill: var(--color-surface);
+  --report-resolved-border: var(--color-border-strong);
+  --report-detail-columns: minmax(0, 1.6fr) minmax(0, 1fr);
   --admin-info-size: 20px;
   --admin-mobile-action-height: 48px;
 }

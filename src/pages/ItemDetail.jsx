@@ -20,8 +20,8 @@ import DeleteListingAction from '../components/items/DeleteListingAction';
 
 export default function ItemDetail() {
   const { id } = useParams();
-  const { user, isVerified } = useAuth();
-  const { item, loading, error, retry } = useItem(id, isVerified);
+  const { user, isVerified, isAdmin } = useAuth();
+  const { item, loading, error, retry } = useItem(id, isVerified && !isAdmin);
   const [selected, setSelected] = useState(0);
   const [wall, setWall] = useState(false);
   const [expandedPhoto, setExpandedPhoto] = useState(null);
@@ -29,8 +29,8 @@ export default function ItemDetail() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [dates, setDates] = useState({ start: '', end: '' });
   const availability = useAvailability(id);
-  const ownItem = Boolean(user && item?.owner_id === user.id);
-  const existing = useItemRequest(item?.id, isVerified && !ownItem ? user?.id : null);
+  const ownItem = Boolean(!isAdmin && user && item?.owner_id === user.id);
+  const existing = useItemRequest(item?.id, isVerified && !isAdmin && !ownItem ? user?.id : null);
   const navigate = useNavigate();
   if (loading)
     return (
@@ -56,6 +56,7 @@ export default function ItemDetail() {
       </section>
     );
   async function openRequest() {
+    if (isAdmin) return;
     if (!isVerified) {
       setWall(true);
       return;
@@ -67,7 +68,9 @@ export default function ItemDetail() {
   }
   const alreadyRequested = !canRequestAgain(existing.request);
   const selectedIndex = Math.min(selected, Math.max(0, item.item_photos.length - 1));
-  const requestButton = ownItem ? (
+  const requestButton = isAdmin ? (
+    <p className="small muted">Admin accounts can view items but cannot request to borrow.</p>
+  ) : ownItem ? (
     <div className="actions detail-owner-actions">
       <Button to={`/items/${id}/requests`}>View requests</Button>
       <Button variant="secondary" to={`/items/${id}/edit`}>
@@ -152,7 +155,8 @@ export default function ItemDetail() {
                 dates={dates}
                 onChange={setDates}
                 maximum={item.max_borrow_days}
-                readOnly={ownItem}
+                readOnly={ownItem || isAdmin}
+                readOnlyHint={isAdmin ? 'Reserved dates are unavailable.' : undefined}
               />
             )}
             <div className="detail-desktop-action">{requestButton}</div>
@@ -194,7 +198,7 @@ export default function ItemDetail() {
           onDeleted={() => navigate('/activity?tab=listings', { replace: true })}
         />
       )}
-      {requestOpen && (
+      {!isAdmin && requestOpen && (
         <RequestBorrowModal
           item={item}
           initialDates={dates}

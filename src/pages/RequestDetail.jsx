@@ -20,6 +20,7 @@ import StatusChip from '../components/ui/StatusChip';
 import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
+import RequestReportPanel from '../components/reports/RequestReportPanel';
 
 export default function RequestDetail() {
   const { id } = useParams();
@@ -161,6 +162,7 @@ export default function RequestDetail() {
         </div>
       )}
       {loading && <p role="status">Refreshing request…</p>}
+      <RequestReportPanel request={request} disabled={busy || loading || Boolean(error) || Boolean(action)} />
       <div className="request-layout">
         <ActionPanel
           request={request}

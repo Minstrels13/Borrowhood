@@ -3,7 +3,7 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import PageShell from './components/layout/PageShell';
 import Landing from './pages/Landing';
 import NotFound from './pages/NotFound';
-import { RequireAuth, RequireAdmin, RequireVerified } from './routes/Guards';
+import { RequireAuth, RequireAdmin, RequireVerified, RequireProfileRead } from './routes/Guards';
 import { DraftProvider } from './context/DraftContext';
 import RouteEffects from './components/layout/RouteEffects';
 
@@ -14,6 +14,7 @@ const Login = lazy(() => import('./pages/Login'));
 const VerificationPending = lazy(() => import('./pages/VerificationPending'));
 
 const AdminQueue = lazy(() => import('./pages/AdminQueue'));
+const AdminReportDetail = lazy(() => import('./pages/AdminReportDetail'));
 
 const Browse = lazy(() => import('./pages/Browse'));
 const ItemDetail = lazy(() => import('./pages/ItemDetail'));
@@ -60,12 +61,15 @@ export default function App() {
                 <Route path="/items/:id/edit" element={<PostItem />} />
                 <Route path="/items/:id/requests" element={<ItemRequests />} />
                 <Route path="/activity" element={<MyListings />} />
+                <Route path="/requests/:id" element={<RequestDetail />} />
+              </Route>
+              <Route element={<RequireProfileRead />}>
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/users/:id" element={<Profile />} />
-                <Route path="/requests/:id" element={<RequestDetail />} />
               </Route>
               <Route element={<RequireAdmin />}>
                 <Route path="/admin/verification" element={<AdminQueue />} />
+                <Route path="/admin/verification/reports/:id" element={<AdminReportDetail />} />
               </Route>
             </Route>
             {import.meta.env.DEV && (

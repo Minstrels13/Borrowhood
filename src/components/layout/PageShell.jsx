@@ -6,11 +6,11 @@ import { mobileHeader, navigationArea } from '../../config/navigation';
 
 export default function PageShell({ children, showTabBar, role }) {
   const { pathname } = useLocation();
-  const { isVerified } = useAuth();
+  const { isVerified, isAdmin } = useAuth();
   const header = mobileHeader(pathname);
   const itemDetail = /^\/items\/[^/]+$/.test(pathname) && pathname !== '/items/new';
   const tabs =
-    isVerified && !itemDetail && (showTabBar ?? Boolean(navigationArea(pathname)));
+    isVerified && !isAdmin && !itemDetail && (showTabBar ?? Boolean(navigationArea(pathname)));
   return (
     <div className={tabs ? 'page-shell page-shell--tabs' : 'page-shell'}>
       <a className="skip-link" href="#main">

@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 export default function OwnerSummary({ owner, showProfile = false, interactive = true }) {
-  const { isVerified } = useAuth();
+  const { isVerified, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [wall, setWall] = useState(false);
   if (!owner) return <p className="muted">Owner details unavailable.</p>;
@@ -24,7 +24,7 @@ export default function OwnerSummary({ owner, showProfile = false, interactive =
             className={showProfile ? 'owner-summary__name' : 'owner-summary__link'}
             aria-label={`View ${owner.full_name}'s profile`}
             onClick={() => {
-              if (!isVerified) setWall(true);
+              if (!isVerified && !isAdmin) setWall(true);
               else navigate(`/users/${owner.id}`);
             }}
           >
