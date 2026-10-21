@@ -499,6 +499,11 @@
   --request-step-size: 32px;
   --request-step-dot: 12px;
   --request-person-trust-min: 80px;
+  --thread-history-height: 50dvh;
+  --thread-history-desktop-height: 390px;
+  --thread-bubble-max-width: 75%;
+  --thread-self-fill: var(--brand-maroon-tint);
+  --thread-compose-height: 64px;
   --condition-record-thumbnail: 96px;
   --condition-record-pending-min: 96px;
 }

@@ -21,6 +21,7 @@ import Button from '../components/ui/Button';
 import { useToast } from '../components/ui/Toast';
 import useUnsavedChanges from '../hooks/useUnsavedChanges';
 import RequestReportPanel from '../components/reports/RequestReportPanel';
+import RequestThreadPanel from '../components/requests/RequestThreadPanel';
 
 export default function RequestDetail() {
   const { id } = useParams();
@@ -164,6 +165,7 @@ export default function RequestDetail() {
       {loading && <p role="status">Refreshing request…</p>}
       <RequestReportPanel request={request} disabled={busy || loading || Boolean(error) || Boolean(action)} />
       <div className="request-layout">
+        <div className="request-sidebar">
         <ActionPanel
           request={request}
           isOwner={isOwner}
@@ -173,6 +175,9 @@ export default function RequestDetail() {
           onAction={perform}
           error={actionError}
         />
+        <RequestThreadPanel request={request} onStatusChange={refresh} />
+        </div>
+        <div className="request-details">
         <div className="request-participants">
           {[
             ['Owner', request.owner],
@@ -183,10 +188,6 @@ export default function RequestDetail() {
               onRetry={() => setTrustRevision((value) => value + 1)} />
           ))}
         </div>
-        <section className="request-message">
-          <h2>Message from the borrower</h2>
-          <p className="preserve-lines">{request.message || 'No message provided.'}</p>
-        </section>
         <section className="request-meetup">
           <h2>Meetup</h2>
           <p className="preserve-lines">
@@ -209,6 +210,7 @@ export default function RequestDetail() {
               <ConditionRecord request={request} event="return" />
           </div>
         </section>
+        </div>
       </div>
       {action && (
         <RequestActionModal

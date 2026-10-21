@@ -8,6 +8,7 @@ const paths = {
   profile: 'M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M4 21v-2a8 8 0 0 1 16 0v2',
   photo: 'M3 3h18v18H3zM3 17l5-5 4 4 3-3 6 6M15 8h.01',
   arrow: 'M14 6l-6 6 6 6',
+  send: 'M22 2L9 15M22 2l-7 20-6-7-7-6z',
   'chevron-down': 'M6 9l6 6 6-6',
   'chevron-right': 'M9 6l6 6-6 6',
   info: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M12 11v6M12 7h.01',

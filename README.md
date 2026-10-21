@@ -4,6 +4,8 @@ BulSU students lend, rent and borrow school items through verified accounts and 
 
 Start with [remaining-phase setup](docs/remaining-phases-setup.md), then use the **[all-phases QA gate](docs/qa-review-gate.md)**. Earlier setup guides retain the original migration/bootstrap and overdue-demo procedures. No remote migration, push or deployment was performed by the agent.
 
+P2 source now includes [Reports](docs/p2-reports-qa.md) and [private request threads](docs/p2-request-threads-qa.md). All Wanted functionality is deferred; FR-47–52 remain retired and unused. Threads refresh on demand/tab return and are accessible only to verified nonadmin request participants; no live delivery or notifications.
+
 ## Run and verify
 
 Use Node.js 22.12+ and pnpm 11:
@@ -22,11 +24,11 @@ Copy .env.example to .env and set the Supabase URL and anon/publishable key, the
 
 ## Supabase
 
-Apply each migration once in numeric order: 001–003, 010–012, 020–024, then **030 → 031 → 040 → 041 → 042**. The new files are additive and retain accounts/data. See [Phase 2 setup](docs/phase-2-setup.md) for initial Auth/admin configuration and [remaining-phase setup](docs/remaining-phases-setup.md) for the new functions/policies. Do not reset or rerun successful migrations.
+Apply each missing migration once in numeric order: 001–003, 010–012, 020–024, then **030 → 031 → 040 → 041 → 042 → 043 → 044 → 045 → 046 → 047 → 048**. Verify installed prerequisites before applying; source presence does not prove installation. 048 adds request threads and denies legacy admin opening-message reads. See [Phase 2 setup](docs/phase-2-setup.md) for initial Auth/admin configuration, [remaining-phase setup](docs/remaining-phases-setup.md), and the P2 QA handoffs above. Do not reset or rerun successful migrations.
 
 Trust comes from actual completed borrows: 100 minus 8 per late return and 15 per damaged return, floored at zero. Minor wear has no penalty. New means no completions; below 70 is Needs attention; five completions and 90+ is Trusted; other completed borrowers are Reliable. Full profiles/history require verified login. Private request notes/messages/evidence remain participant-only. See the [security overview](docs/security-overview.md).
 
-There is no generated student/listing/history content. Team members enter real content through the UI. Payment is agreed in person; the app never handles money. No reports, chat, notifications or other P2 features are included. Wake a paused Supabase project before demos and allow for confirmation-email limits.
+There is no generated student/listing/history content in the application. Team members enter real content through the UI. Payment is agreed in person; the app never handles money. Reports and refresh-only request threads are implemented in source, with hosted SQL/security acceptance pending. Notifications, live chat and Wanted remain excluded. Wake a paused Supabase project before demos and allow for confirmation-email limits.
 
 ## Interface and branding
 
