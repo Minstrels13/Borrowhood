@@ -22,6 +22,26 @@ const tabs = [
   { value: 'approved', label: 'Approved' },
   { value: 'rejected', label: 'Rejected' },
 ];
+
+function QueueEmptyState({ status, query, profileChanges = false }) {
+  const subject = profileChanges ? 'profile changes' : 'students';
+  const descriptions = profileChanges ? {
+    pending: 'Name and photo changes appear here when a student submits them for review.',
+    approved: 'Profile changes appear here after they are approved.',
+    rejected: 'Profile changes appear here after they are rejected.',
+  } : {
+    pending: 'Students appear here after submitting their account for verification.',
+    approved: 'Students appear here after their accounts are approved.',
+    rejected: 'Students appear here after their accounts are rejected.',
+  };
+  return (
+    <div className="admin-queue-empty" role="status">
+      <h3>{query ? `No ${subject} match your search` : `No ${status} ${subject} yet`}</h3>
+      <p className="muted">{query ? 'Try another name or email, or clear your search.' : descriptions[status]}</p>
+    </div>
+  );
+}
+
 export default function AdminQueue() {
   const [params, setParams] = useSearchParams();
   const queue = ['students', 'changes', 'reports'].includes(params.get('tab')) ? params.get('tab') : 'students';
@@ -125,13 +145,13 @@ function StudentVerificationQueue({ pendingCount, onQueueChange }) {
         Refresh queue
       </Button>
       </header>
-      <p className="admin-page__count">
+      {(loading || error || rows.length > 0) && <p className="admin-page__count">
         {loading && !rows.length
           ? 'Loading students…'
           : error && !rows.length ? 'Unable to load student count.' : status === 'pending'
             ? `${total} ${total === 1 ? 'student is' : 'students are'} waiting for review.`
             : `${total} ${status} student${total === 1 ? '' : 's'}`}
-      </p>
+      </p>}
       <div className="admin-guidance">
       <span className="admin-guidance__icon" aria-hidden="true">i</span>
       <p>
@@ -156,14 +176,14 @@ function StudentVerificationQueue({ pendingCount, onQueueChange }) {
         return { ...tab, label: Number.isFinite(count) ? `${tab.label} (${count})` : tab.label };
       })} value={status} onChange={setStatus}>
         <div className="queue" aria-busy={loading} role="region" aria-label="Student verification list" tabIndex={0}>
-          <div className="queue__head" aria-hidden="true">
+          {rows.length > 0 && <div className="queue__head" aria-hidden="true">
             <span>Student</span>
             <span>BulSU email</span>
             <span>Course</span>
             <span>Email status</span>
             <span>Requested</span>
             <span>Actions</span>
-          </div>
+          </div>}
           {rows.map((student) => (
             <article className="queue__row" key={student.id}>
               <div className="queue__student">
@@ -228,9 +248,7 @@ function StudentVerificationQueue({ pendingCount, onQueueChange }) {
           ))}
           {loading && <><p role="status">Loading students…</p><Skeleton variant="text" lines={4} /></>}
           {!loading && !error && !rows.length && (
-            <p className="admin-empty">
-              No {status} students{query ? ' match your search' : ' yet'}.
-            </p>
+            <QueueEmptyState status={status} query={query} />
           )}
           {error && (
             <div role="alert">
@@ -303,8 +321,8 @@ function ProfileChangeQueue({ pendingCount, onQueueChange }) {
         return { ...tab, label: Number.isFinite(count) ? `${tab.label} (${count})` : tab.label };
       })} value={status} onChange={setStatus}>
         <div aria-busy={list.loading}>
-          {!list.loading && !list.error && <p className="small" role="status">{list.total} {status} profile change{list.total === 1 ? '' : 's'}</p>}
-          <ul className="profile-change-list">
+          {!list.loading && !list.error && list.entries.length > 0 && <p className="small" role="status">{list.total} {status} profile change{list.total === 1 ? '' : 's'}</p>}
+          {list.entries.length > 0 && <ul className="profile-change-list">
             {list.entries.map((change) => <li key={change.id} className="notice-card profile-change-row">
               <ProfilePhoto path={change.previous_photo_path} name={change.previous_full_name} />
               <div className="profile-change-row__details"><h3>{change.previous_full_name}</h3><p>{change.email}</p><p className="small muted">Submitted {formatTimestamp(change.created_at)}</p></div>
@@ -315,10 +333,10 @@ function ProfileChangeQueue({ pendingCount, onQueueChange }) {
               </div>
               <ProfileChangeSummary change={change} compact showStatus={false} />
             </li>)}
-          </ul>
+          </ul>}
           {list.loading && <><p role="status">Loading profile changes…</p><Skeleton variant="text" lines={4} /></>}
           {list.error && <div role="alert"><p>{list.error}</p><Button variant="secondary" onClick={refresh}>Try again</Button></div>}
-          {!list.loading && !list.error && !list.entries.length && <p>No {status} profile changes{query ? ' match your search' : ' yet'}.</p>}
+          {!list.loading && !list.error && !list.entries.length && <QueueEmptyState status={status} query={query} profileChanges />}
           {list.entries.length < list.total && <Button variant="secondary" disabled={list.loading} onClick={list.loadMore}>Load more changes</Button>}
         </div>
       </Tabs>

@@ -412,7 +412,21 @@
   --listing-main-min: 300px;
   --listing-requests-min: 150px;
   --listing-controls-min: 310px;
+  --my-listings-thumbnail: 64px;
+  --my-listings-requests-width: var(--listing-requests-min);
+  --my-listings-actions-width: 248px;
+  --my-listings-content-columns: minmax(0, 1fr);
+  --my-listings-content-align: start;
+  --my-listings-actions-columns: minmax(0, 1fr);
   --activity-action-min: 112px;
+}
+
+@media (width > 768px) {
+  :root {
+    --my-listings-content-columns: minmax(0, 1fr) var(--my-listings-requests-width) var(--my-listings-actions-width);
+    --my-listings-content-align: center;
+    --my-listings-actions-columns: auto auto;
+  }
 }
 
 /* G13 profile composition. */

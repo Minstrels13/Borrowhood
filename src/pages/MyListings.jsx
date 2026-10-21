@@ -27,7 +27,10 @@ export default function MyListings() {
   return (
     <>
     <section className="container page-section activity-page">
-      <h1>My Activity</h1>
+      {tab === 'listings' ? <header className="my-listings-heading">
+        <div><h1>My Activity</h1>{!loading && !error && <p>{total} {total === 1 ? 'listing' : 'listings'}</p>}</div>
+        {!loading && <Button variant="secondary" to="/items/new">Post another item</Button>}
+      </header> : <h1>My Activity</h1>}
       <Tabs tabs={tabs} value={tab} onChange={(value) => setParams({ tab: value })}>
         {tab === 'listings' ? (
           <>
@@ -41,13 +44,12 @@ export default function MyListings() {
             {!loading && !error && !items.length && (
               <p>You have no listings yet. Publish an item to share it with other students.</p>
             )}
-            <div className="listing-rows">
+            <div className="listing-rows my-listings-grid" style={{ '--listing-row-count': items.length || 1 }}>
               {items.map((item) => (
                 <ListingRow key={item.id} item={item} editable onDelete={setDeleting} />
               ))}
             </div>
             {loading && <><p role="status">Loading your listings…</p><Skeleton variant="text" lines={3} /></>}
-            {!loading && <Button variant="secondary" to="/items/new">Post another item</Button>}
             {items.length < total && (
               <div className="actions">
                 <Button variant="secondary" onClick={loadMore} disabled={loading}>
