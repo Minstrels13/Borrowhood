@@ -14,6 +14,8 @@ import usePagedResource from '../hooks/usePagedResource';
 import ReviewProfileChangeModal from '../components/modals/ReviewProfileChangeModal';
 import ProfileChangeSummary from '../components/ui/ProfileChangeSummary';
 import { profileChangeDetails } from '../lib/profileChanges';
+import { useSearchParams } from 'react-router-dom';
+import ReportsQueue from '../components/reports/ReportsQueue';
 
 const tabs = [
   { value: 'pending', label: 'Pending' },
@@ -21,7 +23,9 @@ const tabs = [
   { value: 'rejected', label: 'Rejected' },
 ];
 export default function AdminQueue() {
-  const [queue, setQueue] = useState('students');
+  const [params, setParams] = useSearchParams();
+  const queue = ['students', 'changes', 'reports'].includes(params.get('tab')) ? params.get('tab') : 'students';
+  const setQueue = (value) => setParams(value === 'students' ? {} : { tab: value }, { replace: true });
   const [pending, setPending] = useState({});
   const [countRevision, setCountRevision] = useState(0);
   const refreshCounts = useCallback(() => setCountRevision((value) => value + 1), []);
@@ -44,8 +48,9 @@ export default function AdminQueue() {
       <Tabs label="Review queue" value={queue} onChange={setQueue} tabs={[
         { value: 'students', label: countLabel('Account verification', pending.students) },
         { value: 'changes', label: countLabel('Profile changes', pending.changes) },
+        { value: 'reports', label: 'Reports' },
       ]}>
-        {queue === 'students' ? <StudentVerificationQueue pendingCount={pending.students} onQueueChange={refreshCounts} /> : <ProfileChangeQueue pendingCount={pending.changes} onQueueChange={refreshCounts} />}
+        {queue === 'students' ? <StudentVerificationQueue pendingCount={pending.students} onQueueChange={refreshCounts} /> : queue === 'changes' ? <ProfileChangeQueue pendingCount={pending.changes} onQueueChange={refreshCounts} /> : <ReportsQueue />}
       </Tabs>
     </section>
   );

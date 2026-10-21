@@ -54,7 +54,7 @@ export default function Browse() {
       <div className="shelf-heading">
         <h1>The Shelf</h1>
         <p className="shelf-count-desktop">{count}{!loading && !error && ' from BulSU students'}</p>
-        {isVerified && <Button className="shelf-post" to="/items/new">Post an item</Button>}
+        {isVerified && !isAdmin && <Button className="shelf-post" to="/items/new">Post an item</Button>}
       </div>
       <div className="shelf-toolbar">
         <label className="search-field">

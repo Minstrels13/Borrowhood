@@ -12,6 +12,7 @@ export default function AvailabilityCalendar({
   maximum,
   disabled = false,
   readOnly = false,
+  readOnlyHint = 'Reserved dates are unavailable. Review incoming requests using View requests.',
 }) {
   const today = useManilaToday();
   const [month, setMonth] = useState(() => today.slice(0, 7));
@@ -127,7 +128,7 @@ export default function AvailabilityCalendar({
       </div>
       <p className={`small calendar__summary${dates.start && dates.end ? ' calendar__summary--selected' : ''}`} aria-live="polite">
         {readOnly
-          ? 'Reserved dates are unavailable. Review incoming requests using View requests.'
+          ? readOnlyHint
           : dates.start && dates.end
             ? `${formatDate(dates.start)} to ${formatDate(dates.end)} (${inclusiveDays(dates.start, dates.end)} days)`
             : dates.start

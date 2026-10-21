@@ -13,19 +13,20 @@ import { useToast } from '../ui/Toast';
 import useUnsavedChanges from '../../hooks/useUnsavedChanges';
 
 export default function CommentList({ itemId, ownerId }) {
-  const { isVerified, user, profile } = useAuth();
+  const { isVerified, isAdmin, user, profile } = useAuth();
   return (
     <ListingComments
-      key={`${itemId}:${user?.id || 'guest'}`}
+      key={`${itemId}:${user?.id || 'guest'}:${isAdmin}`}
       itemId={itemId}
       ownerId={ownerId}
       isVerified={isVerified}
+      isAdmin={isAdmin}
       profile={profile}
     />
   );
 }
 
-function ListingComments({ itemId, ownerId, isVerified, profile }) {
+function ListingComments({ itemId, ownerId, isVerified, isAdmin, profile }) {
   const fetchPage = useCallback((offset) => getComments(itemId, offset), [itemId]);
   const list = usePagedResource(fetchPage);
   const [body, setBody] = useState('');
@@ -36,6 +37,7 @@ function ListingComments({ itemId, ownerId, isVerified, profile }) {
   const draft = useUnsavedChanges(Boolean(body.trim()), busy);
   async function submit(event) {
     event.preventDefault();
+    if (isAdmin) return;
     if (!isVerified) {
       setWall(true);
       return;
@@ -71,7 +73,8 @@ function ListingComments({ itemId, ownerId, isVerified, profile }) {
           </Button>
         </div>
       )}
-      {isVerified && (
+      {isAdmin && <p className="small muted">Admin accounts can read comments but cannot post them.</p>}
+      {isVerified && !isAdmin && (
         <form className="comment-compose" onSubmit={submit}>
           <ProfilePhoto path={profile?.photo_path} name={profile?.full_name} size="sm" decorative />
           <Field label="Your comment" id="new-comment" required>
@@ -101,7 +104,7 @@ function ListingComments({ itemId, ownerId, isVerified, profile }) {
         </form>
       )}
       {!list.loading && !list.error && !list.entries.length && (
-        <p>No comments yet. Ask a question about this item.</p>
+        <p>{isAdmin ? 'No comments yet.' : 'No comments yet. Ask a question about this item.'}</p>
       )}
       <ul className="comment-list">
         {list.entries.map((comment) => (
@@ -122,7 +125,7 @@ function ListingComments({ itemId, ownerId, isVerified, profile }) {
           Load more comments
         </Button>
       )}
-      {!isVerified && <Button onClick={() => setWall(true)}>Ask a question</Button>}
+      {!isVerified && !isAdmin && <Button onClick={() => setWall(true)}>Ask a question</Button>}
       <VerifiedOnlyModal open={wall} onClose={() => setWall(false)} returnTo={`/items/${itemId}`} />
     </section>
   );

@@ -25,7 +25,14 @@ export function RequireAuth() {
 }
 
 export function RequireVerified() {
-  return useAuth().isVerified ? <Outlet /> : <Navigate to="/pending" replace />;
+  const { isVerified, isAdmin } = useAuth();
+  if (isAdmin) return <Navigate to="/admin/verification" replace />;
+  return isVerified ? <Outlet /> : <Navigate to="/pending" replace />;
+}
+
+export function RequireProfileRead() {
+  const { isVerified, isAdmin } = useAuth();
+  return isAdmin || isVerified ? <Outlet /> : <Navigate to="/pending" replace />;
 }
 
 export function RequireAdmin() {

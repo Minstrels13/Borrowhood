@@ -21,13 +21,13 @@ import ProfileChangeSummary from '../components/ui/ProfileChangeSummary';
 
 export default function Profile() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const target = id || user.id;
-  return <StudentProfile key={`${user.id}:${target}`} id={target} own={target === user.id} />;
+  return <StudentProfile key={`${user.id}:${target}:${isAdmin}`} id={target} own={!isAdmin && target === user.id} />;
 }
 
 function StudentProfile({ id, own }) {
-  const { refresh: refreshAccount } = useAuth();
+  const { refresh: refreshAccount, isAdmin } = useAuth();
   const navigate = useNavigate();
   const notify = useToast();
   const confirmNavigation = useDraftNavigation();
@@ -94,6 +94,7 @@ function StudentProfile({ id, own }) {
       <aside className="notice-card profile-identity">
         <ProfilePhoto path={profile.photo_path} name={profile.full_name} size="lg" />
         <h1>{profile.full_name}</h1>
+        {isAdmin && <p className="small muted">Viewing as admin</p>}
         <p>{profile.course_year_section}</p>
         <Chip label="Verified BulSU student" tone="info" />
         <p className="small muted">
@@ -163,14 +164,14 @@ function StudentProfile({ id, own }) {
         </div>
         {own && <Button className="profile-logout" variant="secondary" onClick={logout}>Log out</Button>}
       </div>
-      <EditProfileModal
+      {!isAdmin && <EditProfileModal
         open={editing}
         approvedProfile={profile}
         onClose={() => {
           setEditing(false);
           setRevision((value) => value + 1);
         }}
-      />
+      />}
     </section>
     </>
   );
@@ -226,6 +227,7 @@ function ProfileListings({ id }) {
 }
 
 function ProfileHistory({ id }) {
+  const { isAdmin } = useAuth();
   const fetchPage = useCallback((offset) => getProfileHistory(id, offset), [id]);
   const list = usePagedResource(fetchPage);
   return (
@@ -258,7 +260,7 @@ function ProfileHistory({ id }) {
               </span>
               <Chip label={conditions[entry.condition]} tone={entry.condition === 'damaged' ? 'danger' : entry.condition === 'minor_wear' ? 'clay' : 'info'} />
             </div>
-            {entry.request_id && (
+            {!isAdmin && entry.request_id && (
               <Button variant="secondary" to={`/requests/${entry.request_id}`}>
                 View condition records
               </Button>
